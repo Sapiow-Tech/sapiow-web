@@ -401,161 +401,177 @@ export default {
     openSourceLicenses: "Open Source Licenses",
     termsContent:
       "These Terms of Use govern the use of the Sapiow platform, accessible via our website and mobile application. Sapiow is a platform that allows experts to register and offer their services, and clients to view the list of available experts to schedule appointments with them. By using Sapiow, you agree to comply with these Terms of Use. Sapiow reserves the right to modify these terms at any time, and users will be informed of significant changes. Continued use of the platform after modification of the Terms of Use constitutes acceptance of these changes. Experts commit to providing accurate and up-to-date information regarding their profile, skills, and availability. Clients commit to respecting scheduled appointments and canceling within a reasonable timeframe if necessary. Sapiow is not responsible for the quality of services provided by experts, but strives to maintain a community of qualified experts.",
-    privacyContent: `<h1><strong>Privacy Policy – Sapiow</strong></h1>
+    privacyContent: `<h1><strong>PRIVACY POLICY</strong></h1>
 
-<p><strong>Last updated:</strong> 30/10/2025</p>
+<p><strong>Effective date:</strong> July 1, 2026</p>
 
-<p>This Privacy Policy explains how <strong>Sapiow</strong> (“we”, “our”, “us”) collects, uses, shares, and protects your personal information when you use our platform connecting individuals and experts.</p>
+<p>At SAPIOW, respecting your privacy and protecting your personal data is our priority.</p>
 
-<p>We take your privacy seriously and are committed to handling your data in accordance with the <strong>General Data Protection Regulation (GDPR)</strong>, applicable privacy laws, and the data protection requirements of <strong>Google</strong> and <strong>Stripe</strong>.</p>
+<p>This privacy policy (the "Privacy Policy") is intended to inform you about how your personal data is processed when you use the website <a href="https://sapiow.com/">https://sapiow.com/</a> (the "Website") and/or the Sapiow application (the "Application"), in accordance with Regulation (EU) 2016/679 of 27 April 2016 on the protection of natural persons with regard to the processing of personal data and on the free movement of such data (the "GDPR") and French Law No. 78-17 of 6 January 1978 on information technology, data files and civil liberties, as amended (together, the "Applicable Regulations").</p>
 
-<h2><strong>1. Information We Collect</strong></h2>
+<p>This Privacy Policy does not describe how your data is collected and processed via cookies and other trackers ("Cookies") on the Website and/or the Application. For more information, please refer to our Cookie Policy.</p>
 
-<p>We only collect the information necessary to provide and improve our services.</p>
+<h2><strong>Who is the data controller?</strong></h2>
 
-<h3>a. Information You Provide Directly</h3>
+<p>When you browse and/or register on our Website and/or our Application, or more generally in the context of managing our contractual relationship with you, the data controller is SAPIOW, registered with the Rouen Trade and Companies Register under number 107 277 550, whose registered office is located at La Maison Bleue - 16 rue Alsace Lorraine 76000 Rouen ("We", "Us", "Our").</p>
 
-<ul>
-  <li>Full name</li>
-  <li>Email address</li>
-  <li>Phone number</li>
-  <li>Profile photo (optional)</li>
-  <li>Professional skills, experience, and availability (for experts)</li>
-  <li>Messages or information exchanged through the platform</li>
-</ul>
+<h2><strong>What data do we collect?</strong></h2>
 
-<h3>b. Information from Google</h3>
+<p>Personal data is any information that allows an individual to be identified directly or by cross-referencing with other data.</p>
 
-<p>If you choose to connect your <strong>Google Account</strong>, we may access:</p>
+<p>We collect personal data falling within the following categories:</p>
 
 <ul>
-  <li>Your <strong>Google email address</strong></li>
-  <li>Your <strong>Google profile name</strong> and <strong>profile picture</strong></li>
-  <li>
-    <p>Your <strong>Google Calendar data</strong>, specifically to:</p>
-    <ul>
-      <li><strong>Create</strong>, <strong>edit</strong>, and <strong>delete</strong> calendar events related to appointments made through Sapiow</li>
-      <li><strong>Synchronize your availability</strong> to prevent scheduling conflicts</li>
-    </ul>
-  </li>
+  <li>Identification data (last name, first name, email address, phone number);</li>
+  <li>Professional life data (company name, CV, position/job title, LinkedIn URL);</li>
+  <li>Social network data (profiles or username);</li>
+  <li>Data relating to your purchases on the Website and/or the Application when you are connected with an Expert;</li>
+  <li>Connection data (connection logs, encrypted passwords);</li>
+  <li>Browsing data (IP address, pages viewed, date and time of connection, browser used, operating system, user ID, MAID);</li>
+  <li>Economic and financial data (data relating to your bank cards);</li>
+  <li>Any information you wish to send us as part of your contact request;</li>
+  <li>Technical data relating to video calls: only connection metadata (duration, network quality) is processed to ensure service maintenance, in compliance with the strictest security standards (SOC2, HIPAA).</li>
 </ul>
 
-<p>We <strong>never access your Gmail messages, Drive files, contacts, or any other unrelated Google data</strong>.</p>
+<p>To enable open conversations and ensure digital hygiene, SAPIOW guarantees the strict confidentiality of your exchanges through the secure infrastructure of its certified technical partner.</p>
 
-<h3>c. Payment Information (via Stripe)</h3>
+<p>SAPIOW formally undertakes never to record the content of your video calls; no audio or video streams and no transcriptions are recorded.</p>
 
-<p>Payments on Sapiow are processed securely through <strong>Stripe</strong>, a PCI-DSS certified payment processor.
-We <strong>do not store or process</strong> your credit card or bank information on our servers.
-All payment details are transmitted directly to Stripe and handled in accordance with their <a href="https://stripe.com/privacy">Privacy Policy</a>.</p>
+<p>Exchanges are encrypted in transit and are never stored on servers. There is no archive: once the video call has ended, the content permanently ceases to exist.</p>
 
-<h3>d. Technical Information</h3>
+<p>We have no interest in exploiting your data: it is never analyzed, never sold, nor used to train third-party technologies.</p>
 
-<p>We may collect limited technical data such as:</p>
+<p>Mandatory data fields are indicated when you provide your data to us. They are marked by any appropriate means.</p>
+
+<h2><strong>Details on the processing of your personal data</strong></h2>
+
+<div class="overflow-x-auto my-4">
+  <table>
+    <thead>
+      <tr>
+        <th>Purposes</th>
+        <th>Legal bases</th>
+        <th>Retention periods</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Providing our services available on our Website and/or our Application through your account</td>
+        <td>Performance of the contract you have entered into with Us (i.e., our Terms of Use)</td>
+        <td>
+          <p>When you have created an account: your data is retained for the entire duration of your account.</p>
+          <p>Your connection logs are retained for 6 months or 1 year.</p>
+          <p>In the event of an inactive account for 2 years, your personal data will be deleted if you do not respond to our reactivation email.</p>
+          <p>In addition, your data may be archived for evidentiary purposes for a period of 5 years.</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Carrying out operations relating to the management of our customers concerning purchases and ensuring follow-up of the contractual relationship with our customers</td>
+        <td>Performance of the contract you have entered into with Us (i.e., our Terms of Use)</td>
+        <td>
+          <p>Personal data is retained for the entire duration of the contractual relationship.</p>
+          <p>In addition, your data (with the exception of your bank details) is archived for evidentiary purposes for a period of 5 years.</p>
+          <p>With regard to data relating to your bank card, it is retained by our payment service provider available on the Website and/or the Application in accordance with its own terms and conditions.</p>
+          <p>Data relating to the card security code or CVV2 printed on your bank card is not stored.</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Building a prospect database</td>
+        <td>Our legitimate interest in developing and promoting our business</td>
+        <td>Your data is retained for a period of 3 years from your last contact with us.</td>
+      </tr>
+      <tr>
+        <td>Complying with our legal obligations regarding the reporting of unlawful content on the Website and/or the Application</td>
+        <td>Compliance with our legal and regulatory obligations in the context of our Website and/or Application</td>
+        <td>
+          <p>Data relating to your identity is retained for 5 years from the end of the validity of the Terms of Use, the closure of your account, or the closure of the report.</p>
+          <p>Other information provided by the user, in particular payment-related information, is retained for one year from the end of the validity of the Terms of Use, the closure of your account, or the closure of the report.</p>
+          <p>Technical data enabling the source of the connection to be identified, or data relating to the terminal equipment used, is retained for a period of one year from the connection or use of the terminal equipment.</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Sending newsletters, solicitations and promotional messages by email</td>
+        <td>
+          <p>For customers: our legitimate interest in retaining and informing our customers of our latest news</p>
+          <p>For prospects or customers who have not booked a session with an Expert on the Website and/or the Application: your consent</p>
+          <p>For professional Experts: our legitimate interest in retaining and informing our customers and prospects of our latest news</p>
+        </td>
+        <td>Data is retained for 3 years from your last contact with us or until you withdraw your consent.</td>
+      </tr>
+      <tr>
+        <td>Responding to your requests for information, contact and/or demonstration</td>
+        <td>Performance of pre-contractual measures taken at your request</td>
+        <td>Data is retained for a period of 3 years from your last contact.</td>
+      </tr>
+      <tr>
+        <td>Retaining administrative information and documents related to our business</td>
+        <td>Compliance with our legal and regulatory obligations</td>
+        <td>
+          <p>Invoices are archived for a period of 10 years.</p>
+          <p>Data relating to your transactions (with the exception of banking data) is retained for 5 years.</p>
+        </td>
+      </tr>
+      <tr>
+        <td>Responding to requests to exercise rights by data subjects</td>
+        <td>Compliance with our legal and regulatory obligations</td>
+        <td>
+          <p>If we ask you for proof of identity: we retain it only for the time necessary to verify your identity. Once verification is complete, the proof of identity is deleted.</p>
+          <p>If you exercise your right to object to receiving marketing communications: we retain this information for 3 years.</p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2><strong>Who are the recipients of your data?</strong></h2>
+
+<p>The following will have access to your personal data:</p>
 
 <ul>
-  <li>IP address</li>
-  <li>Browser type and operating system</li>
-  <li>Device information</li>
-  <li>Cookies and connection logs (see our Cookie Policy if applicable)</li>
+  <li>Our company's staff;</li>
+  <li>Our processors: hosting provider, website creation provider, communication sending provider (emails and phone), audience measurement and analytics provider, email messaging provider, instant messaging provider, secure payment provider, invoicing tool, cookie management tool;</li>
+  <li>Any legally authorized authority, in particular judicial, police or administrative authorities, if they so request.</li>
 </ul>
 
-<h2><strong>2. How We Use Your Information</strong></h2>
+<h2><strong>Is your data likely to be transferred outside the European Union?</strong></h2>
 
-<p>We use your data solely for the purposes of:</p>
+<p>Your data is stored and kept for the entire duration of processing on the servers of Supabase, located within the European Union.</p>
+
+<p>In the context of the tools we use (see the section on recipients regarding our processors), your data may be subject to transfers outside the European Union. The transfer of your data in this context is secured by means of the following tools:</p>
 
 <ul>
-  <li>Managing your account and authentication</li>
-  <li>Facilitating connections between clients and experts</li>
-  <li>Scheduling and synchronizing appointments (via Google Calendar)</li>
-  <li>Processing secure payments and invoices (via Stripe)</li>
-  <li>Sending notifications, reminders, and service updates</li>
-  <li>Improving the quality and security of our platform</li>
-  <li>Providing customer support</li>
+  <li>either the data is transferred to a country that has been subject to an adequacy decision by the European Commission, in accordance with Article 45 of the GDPR: in this case, that country ensures a level of protection deemed sufficient and adequate to the provisions of the GDPR;</li>
+  <li>or the data is transferred to a country whose level of data protection has not been recognized as adequate under the GDPR: in this case, these transfers are based on appropriate safeguards indicated in Article 46 of the GDPR, adapted to each provider, including but not limited to the conclusion of standard contractual clauses approved by the European Commission, the application of binding corporate rules, or under an approved certification mechanism;</li>
+  <li>or the data is transferred on the basis of one of the appropriate safeguards described in Chapter V of the GDPR.</li>
 </ul>
 
-<p>We <strong>do not sell</strong> your data or use it for advertising purposes.
-Google and Stripe data are used <strong>only as required to deliver core platform functionality</strong>.</p>
+<p>You may obtain a copy of the tools enabling the transfer of your data outside the European Union by contacting us at the details indicated in the section "What are your rights regarding your data?" below.</p>
 
-<h2><strong>3. Data Sharing</strong></h2>
+<h2><strong>What are your rights regarding your data?</strong></h2>
 
-<p>We share your data only when necessary:</p>
+<p>You have the following rights with regard to your personal data:</p>
 
 <ul>
-  <li>With <strong>technical service providers</strong> (hosting, messaging, authentication) under strict confidentiality agreements;</li>
-  <li>With <strong>Stripe</strong> for secure payment processing;</li>
-  <li>With <strong>Google</strong> only when you have granted explicit permission for Calendar access;</li>
-  <li>With <strong>law enforcement or authorities</strong> when required by law.</li>
+  <li><strong>Right to information</strong>: this is precisely why we have drafted this Privacy Policy. This right is provided for in Articles 13 and 14 of the GDPR.</li>
+  <li><strong>Right of access</strong>: you have the right to access all of your personal data at any time, pursuant to Article 15 of the GDPR.</li>
+  <li><strong>Right to rectification</strong>: you have the right to rectify inaccurate, incomplete or outdated personal data at any time in accordance with Article 16 of the GDPR.</li>
+  <li><strong>Right to restriction</strong>: you have the right to obtain restriction of the processing of your personal data in certain cases defined in Article 18 of the GDPR.</li>
+  <li><strong>Right to erasure</strong>: you have the right to require that your personal data be erased, and to prohibit any future collection for the reasons set out in Article 17 of the GDPR.</li>
+  <li><strong>Right to define directives relating to the retention, erasure and communication of your personal data after your death.</strong></li>
+  <li><strong>Right to withdraw your consent at any time</strong>: for purposes based on consent, Article 7 of the GDPR states that you may withdraw your consent at any time. This withdrawal will not affect the lawfulness of processing carried out before the withdrawal.</li>
+  <li><strong>Right to data portability</strong>: subject to certain conditions specified in Article 20 of the GDPR, you have the right to receive the personal data you have provided to us in a standard machine-readable format and to require its transfer to the recipient of your choice.</li>
+  <li><strong>Right to object</strong>: pursuant to Article 21 of the GDPR, you have the right to object to the processing of your personal data. Please note, however, that we may continue processing despite this objection, for legitimate reasons or for the defense of legal claims.</li>
 </ul>
 
-<p>We never share or sell your information for marketing purposes.</p>
+<p>You may exercise these rights by writing to us at the following address: <strong><a href="mailto:privacy@sapiow.com">privacy@sapiow.com</a></strong>.</p>
 
-<h2><strong>4. Data Storage and Security</strong></h2>
+<p>We may ask you to provide additional information in the event of reasonable doubt, or any document likely to justify your identity if the doubt persists.</p>
 
-<p>We implement robust technical and organizational measures to protect your data, including:</p>
+<p>For any question or request that remains unsuccessful, you have the right to lodge a complaint with the competent supervisory authority, in France, the Commission Nationale de l'Informatique et des Libertés ("CNIL"), located at 3 Place de Fontenoy - TSA 80715 - 75334 PARIS CEDEX 07.</p>
 
-<ul>
-  <li>Encryption in transit (HTTPS / TLS) and at rest;</li>
-  <li>Secure servers located within the European Union or in GDPR-compliant regions;</li>
-  <li>Strict access controls and activity logging;</li>
-  <li>Regular security audits and software updates.</li>
-</ul>
+<h2><strong>Changes</strong></h2>
 
-<p>Google and Stripe data are stored and processed in accordance with their respective security standards.
-Sapiow does <strong>not locally store Google or Stripe data</strong> beyond what is strictly necessary.</p>
-
-<h2><strong>5. Data Retention</strong></h2>
-
-<ul>
-  <li>We retain your personal data <strong>for as long as your account remains active</strong> or as needed to provide our services.</li>
-  <li>You may request <strong>account deletion</strong> at any time (see Section 6).</li>
-  <li>Payment-related data may be retained for up to <strong>10 years</strong> in accordance with legal obligations.</li>
-  <li>Google authorizations automatically expire if you revoke access through your Google Account.</li>
-</ul>
-
-<h2><strong>6. Your Rights</strong></h2>
-
-<p>Under the GDPR and applicable data protection laws, you have the right to:</p>
-
-<ul>
-  <li><strong>Access</strong> your personal data;</li>
-  <li><strong>Correct</strong> inaccurate information;</li>
-  <li><strong>Delete</strong> your personal data (“right to be forgotten”);</li>
-  <li><strong>Restrict or object</strong> to certain processing activities;</li>
-  <li><strong>Port</strong> your data to another service;</li>
-  <li><strong>Withdraw consent</strong> at any time for Google or Stripe integrations.</li>
-</ul>
-
-<p>To exercise these rights, please contact us at:
-<strong><a href="mailto:contact@sapiow.com">contact@sapiow.com</a></strong></p>
-
-<h2><strong>7. Deleting Google and Stripe Data</strong></h2>
-
-<p>You can take the following actions at any time:</p>
-
-<ul>
-  <li><strong>Revoke Google access</strong> by visiting <a href="https://myaccount.google.com/permissions">https://myaccount.google.com/permissions</a></li>
-  <li><strong>Delete your Sapiow account</strong>, which permanently removes all associated data, including synchronized calendar events</li>
-  <li><strong>Contact Stripe</strong> regarding payment data at <a href="mailto:privacy@stripe.com">privacy@stripe.com</a></li>
-</ul>
-
-<h2><strong>8. International Data Transfers</strong></h2>
-
-<p>Some of our service providers (including Google and Stripe) may process data outside the European Union.
-Such transfers occur only to countries recognized by the <strong>European Commission</strong> as providing an adequate level of protection or are governed by <strong>Standard Contractual Clauses (SCCs)</strong>.</p>
-
-<h2><strong>9. Updates to This Policy</strong></h2>
-
-<p>We may update this Privacy Policy from time to time to reflect legal, technical, or operational changes.
-The latest version will always be available at <strong><a href="https://sapiow-jfmsga3sp-betech-projects.vercel.app/mentions-legales">https://sapiow-jfmsga3sp-betech-projects.vercel.app/mentions-legales</a></strong>.
-We encourage you to review it periodically.</p>
-
-<h2><strong>10. Contact Us</strong></h2>
-
-<p>If you have any questions or concerns about this Privacy Policy or your personal data, please contact us at:</p>
-
-<p><strong>Sapiow – Privacy Department</strong>
-<br /><strong><a href="mailto:contact@sapiow.com">contact@sapiow.com</a></strong>
-<br /><a href="https://sapiow-jfmsga3sp-betech-projects.vercel.app/mentions-legales">https://sapiow-jfmsga3sp-betech-projects.vercel.app/mentions-legales</a></p>`,
+<p>We may modify this Privacy Policy at any time, in particular to comply with any regulatory, case law, editorial or technical developments. These changes will apply as of the effective date of the modified version. You are therefore invited to regularly consult the latest version of this policy. Nevertheless, we will inform you of any significant change to this privacy policy.</p>`,
     licensesContent:
       "Sapiow uses several open source software components for its operation. We are grateful to the open source community for their remarkable work. Our application is built with Next.js under the MIT license, React under the MIT license, and uses several libraries such as TailwindCSS, React Query, and next-international for translation management. All these libraries are used in accordance with their respective licenses. The complete licenses for these software components are available in our code repository or upon request. We are committed to respecting the terms of open source licenses and contributing to the open source community when possible. If you are a developer and would like to contribute to Sapiow, please don't hesitate to contact us. We believe in the power of collaboration and knowledge sharing to create quality products.",
   },

@@ -4,8 +4,8 @@ import { useGetCustomer } from "@/api/customer/useCustomer";
 import { type ApiAppointment } from "@/utils/appointmentUtils";
 import { useMemo } from "react";
 
-export const usePatientAppointments = () => {
-  const { data: customer } = useGetCustomer();
+export const usePatientAppointments = (enabled: boolean = true) => {
+  const { data: customer } = useGetCustomer(enabled);
 
   // Filtrer les rendez-vous futurs (>= aujourd'hui à minuit)
   const today = new Date();

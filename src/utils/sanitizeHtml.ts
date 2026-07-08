@@ -39,6 +39,13 @@ export function sanitizeHtml(dirty: string): string {
       "blockquote",
       "code",
       "pre",
+      "table",
+      "thead",
+      "tbody",
+      "tr",
+      "th",
+      "td",
+      "div",
     ],
     // Allow safe attributes
     ALLOWED_ATTR: ["href", "target", "rel", "class", "id"],
