@@ -55,7 +55,7 @@ const getTabs = (t: any, privacyHtml: string): LegalTab[] => [
     label: t("legalMentions.privacyPolicy"),
     content: (
       <div
-        className="space-y-4 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-semibold [&_ul]:list-disc [&_ul]:ml-4 [&_p]:mb-2"
+        className="space-y-4 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-semibold [&_ul]:list-disc [&_ul]:ml-4 [&_p]:mb-2 [&_table]:w-full [&_table]:min-w-[640px] [&_table]:border-collapse [&_th]:border [&_th]:border-gray-200 [&_th]:p-3 [&_th]:text-left [&_th]:font-semibold [&_th]:bg-gray-50 [&_td]:border [&_td]:border-gray-200 [&_td]:p-3 [&_td]:align-top [&_.overflow-x-auto]:overflow-x-auto [&_.overflow-x-auto]:-mx-2 [&_.overflow-x-auto]:px-2"
         dangerouslySetInnerHTML={{
           __html: sanitizeHtml(privacyHtml),
         }}
