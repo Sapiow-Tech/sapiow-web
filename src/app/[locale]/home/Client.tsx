@@ -8,8 +8,9 @@ import {
   transformAppointmentToSessionData,
   type ApiAppointment,
 } from "@/utils/appointmentUtils";
+import { authUtils } from "@/utils/auth";
 import { useTranslations } from "next-intl";
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import SkeletonGrid from "../../../components/layout/SkeletonGrid";
 import CategoryFilter from "./CategoryFilter";
 import CategorySection from "./CategorySection";
@@ -208,6 +209,14 @@ const ExpertsResultsSection = memo(function ExpertsResultsSection({
 export default function Client() {
   const t = useTranslations();
   const { searchQuery } = useSearchStore();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    authUtils
+      .isAuthenticated()
+      .then(setIsAuthenticated)
+      .catch(() => setIsAuthenticated(false));
+  }, []);
 
   const {
     selectedCategory,
@@ -224,9 +233,8 @@ export default function Client() {
     error,
   } = useClientHome();
 
-  // Récupération des appointments du patient avec filtre de date et recherche
   const { confirmedAppointments: upcomingAppointments } =
-    usePatientAppointments();
+    usePatientAppointments(isAuthenticated);
 
   // Déterminer si on est en mode recherche
   const isSearchMode = Boolean(searchQuery && searchQuery.trim().length > 0);

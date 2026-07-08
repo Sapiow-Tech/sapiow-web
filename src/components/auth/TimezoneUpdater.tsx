@@ -5,11 +5,21 @@ import {
   useGetProExpert,
   useUpdateProExpert,
 } from "@/api/proExpert/useProExpert";
-import { useEffect, useRef } from "react";
+import { authUtils } from "@/utils/auth";
+import { useEffect, useRef, useState } from "react";
 
 export function TimezoneUpdater() {
-  const { data: customer } = useGetCustomer();
-  const { data: proExpert } = useGetProExpert();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    authUtils
+      .isAuthenticated()
+      .then(setIsAuthenticated)
+      .catch(() => setIsAuthenticated(false));
+  }, []);
+
+  const { data: customer } = useGetCustomer(isAuthenticated);
+  const { data: proExpert } = useGetProExpert(isAuthenticated);
   const { mutate: updateCustomer } = useUpdateCustomer();
   const { mutate: updateProExpert } = useUpdateProExpert();
 

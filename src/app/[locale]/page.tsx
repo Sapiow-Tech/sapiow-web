@@ -19,33 +19,14 @@ function Home() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [currentUserType, setCurrentUserType] = useState(user.type);
   const [isRedirectingOAuth, setIsRedirectingOAuth] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Vérifier l'authentification au chargement de la page
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const authenticated = await authUtils.isAuthenticated();
-        setIsAuthenticated(authenticated);
-
-        if (!authenticated) {
-          console.log("❌ Non authentifié, redirection vers /login");
-          router.push(`/${locale}/login`);
-        }
-      } catch (error) {
-        console.error(
-          "Erreur lors de la vérification d'authentification:",
-          error
-        );
-        router.push(`/${locale}/login`);
-      } finally {
-        setIsCheckingAuth(false);
-      }
-    };
-
-    checkAuth();
-  }, [router, locale]);
+    authUtils
+      .isAuthenticated()
+      .then(setIsAuthenticated)
+      .catch(() => setIsAuthenticated(false));
+  }, []);
 
   // Gérer le retour OAuth de Google Calendar (doit être le premier useEffect)
   useEffect(() => {
@@ -65,33 +46,19 @@ function Home() {
     }
   }, [router, locale]);
 
+  const viewType =
+    isAuthenticated && user.type === "expert" ? "expert" : "client";
+
   useEffect(() => {
-    if (user.type !== currentUserType) {
+    if (viewType !== currentUserType) {
       setIsTransitioning(true);
       const timer = setTimeout(() => {
-        setCurrentUserType(user.type);
+        setCurrentUserType(viewType);
         setIsTransitioning(false);
       }, 150);
       return () => clearTimeout(timer);
     }
-  }, [user.type, currentUserType]);
-
-  // Afficher un loader pendant la vérification d'authentification
-  if (isCheckingAuth) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t("loading")}...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Si non authentifié, ne rien afficher (redirection en cours)
-  if (!isAuthenticated) {
-    return null;
-  }
+  }, [viewType, currentUserType]);
 
   // Afficher un loader pendant la redirection OAuth
   if (isRedirectingOAuth) {
@@ -110,7 +77,7 @@ function Home() {
       <AppSidebar />
       <div className="flex-1 flex flex-col">
         <div className="transition-all duration-300 ease-in-out sticky top-0 z-20">
-          {currentUserType === "client" ? (
+          {viewType === "client" ? (
             <HeaderClient />
           ) : (
             <Header isBorder={true} />
@@ -124,7 +91,7 @@ function Home() {
                 : "opacity-100 translate-y-0 scale-100"
             }`}
           >
-            {currentUserType === "client" ? <Client /> : <Expert />}
+            {viewType === "client" ? <Client /> : <Expert />}
           </div>
         </div>
 

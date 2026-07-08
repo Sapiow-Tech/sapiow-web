@@ -259,10 +259,10 @@ function ProfessionalDetailContent() {
   }, [expertId, router]);
 
   useEffect(() => {
-    if (userClient.type === "expert") {
+    if (isAuthenticated && userClient.type === "expert") {
       router.push("/");
     }
-  }, [userClient, router]);
+  }, [isAuthenticated, userClient, router]);
 
   // États de chargement et d'erreur
   if (isLoading) {
