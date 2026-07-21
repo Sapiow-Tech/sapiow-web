@@ -76,18 +76,22 @@ export default function Expert() {
   } = useGetInfoStripeAccount();
 
   const capabilities = stripeAccountData?.account?.capabilities;
-  const isStripeAccountMissing = !stripeAccountLoading && !stripeAccountData;
+  const isStripeAccountMissing = !stripeAccountData;
   const isCardPaymentsInactive = capabilities?.card_payments !== "active";
   const isTransfersInactive = capabilities?.transfers !== "active";
   const hasStripeError = Boolean(stripeAccountError);
+  const isStripeStatusReady = !stripeAccountLoading;
 
-  const stripeAlertTitle = hasStripeError
-    ? t("stripeCreateAccountRequired")
-    : isStripeAccountMissing
+  // Wait for Stripe response before deciding whether to show the alert
+  const stripeAlertTitle = !isStripeStatusReady
+    ? null
+    : hasStripeError
       ? t("stripeCreateAccountRequired")
-      : isCardPaymentsInactive || isTransfersInactive
-        ? t("stripeActionRequiredTitle")
-        : null;
+      : isStripeAccountMissing
+        ? t("stripeCreateAccountRequired")
+        : isCardPaymentsInactive || isTransfersInactive
+          ? t("stripeActionRequiredTitle")
+          : null;
 
   const stripeAlertBullets = !stripeAlertTitle
     ? []
