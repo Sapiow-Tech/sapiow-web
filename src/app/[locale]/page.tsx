@@ -19,7 +19,8 @@ function Home() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [currentUserType, setCurrentUserType] = useState(user.type);
   const [isRedirectingOAuth, setIsRedirectingOAuth] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // null = auth not checked yet — avoid forcing "client" during bootstrap
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
     authUtils
@@ -46,8 +47,15 @@ function Home() {
     }
   }, [router, locale]);
 
+  // While auth is unresolved, keep store type to avoid a false client↔expert switch
   const viewType =
-    isAuthenticated && user.type === "expert" ? "expert" : "client";
+    isAuthenticated === null
+      ? user.type === "expert"
+        ? "expert"
+        : "client"
+      : isAuthenticated && user.type === "expert"
+        ? "expert"
+        : "client";
 
   useEffect(() => {
     if (viewType !== currentUserType) {
@@ -58,6 +66,7 @@ function Home() {
       }, 150);
       return () => clearTimeout(timer);
     }
+    setIsTransitioning(false);
   }, [viewType, currentUserType]);
 
   // Afficher un loader pendant la redirection OAuth
