@@ -105,7 +105,7 @@ function Favori() {
 
   if (isLoading) {
     return (
-      <div className="flex container">
+      <div className="w-full lg:flex min-h-screen bg-white">
         <AppSidebar />
         <div className="w-full flex-1">
           <HeaderClient
@@ -113,7 +113,7 @@ function Favori() {
             isBack={true}
             classNameIsBack="py-1"
           />
-          <div className="container">
+          <div className="px-5">
             <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
               <LoadingScreen
                 message={t("favorites.loading")}
@@ -129,7 +129,7 @@ function Favori() {
 
   if (error) {
     return (
-      <div className="flex container">
+      <div className="w-full lg:flex min-h-screen bg-white">
         <AppSidebar />
         <div className="w-full flex-1">
           <HeaderClient
@@ -137,7 +137,7 @@ function Favori() {
             isBack={true}
             classNameIsBack="py-1"
           />
-          <div className="container">
+          <div className="px-5">
             <div className="text-center py-12">
               <div className="text-red-500 text-lg mb-4">
                 {t("favorites.error")}
@@ -153,7 +153,7 @@ function Favori() {
   }
 
   return (
-    <div className="flex container">
+    <div className="w-full lg:flex min-h-screen bg-white">
       <AppSidebar />
       <div className="w-full flex-1">
         <HeaderClient
@@ -161,7 +161,7 @@ function Favori() {
           isBack={true}
           classNameIsBack="py-1"
         />
-        <div className="container">
+        <div className="px-5">
           {favoriteProfessionals.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-gray-500 text-lg mb-4">
