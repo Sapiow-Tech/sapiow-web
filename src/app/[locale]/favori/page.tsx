@@ -13,6 +13,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import ProfessionalCard from "../home/ProfessionalCard";
+import { getStartingFromPrice } from "@/utils/getStartingFromPrice";
 
 // Fonction pour convertir les données API en format Professional
 const mapFavoriteToProfessional = (favorite: any, t: any): Professional => {
@@ -53,7 +54,7 @@ const mapFavoriteToProfessional = (favorite: any, t: any): Professional => {
     name: `${pro.first_name} ${pro.last_name}`.trim(),
     first_name: pro.first_name,
     last_name: pro.last_name,
-    price: pro.sessions?.[0]?.price,
+    price: getStartingFromPrice(pro.sessions),
     image: formatImageUrl(pro.avatar),
     avatar: pro.avatar,
     verified: true,
@@ -67,6 +68,7 @@ const mapFavoriteToProfessional = (favorite: any, t: any): Professional => {
       )} ${getCategoryDisplayName(pro.domains?.name)}`,
     linkedin: pro.linkedin,
     job: pro.job,
+    sessions: pro.sessions,
   };
 };
 
@@ -181,6 +183,7 @@ function Favori() {
                   onToggleLike={(id) => handleToggleLike(id)}
                   onProfessionalClick={handleProfessionalClick}
                   isLoadingFavorite={removeFavoriteMutation.isPending}
+                  showFirstCallOffer
                 />
               ))}
             </div>

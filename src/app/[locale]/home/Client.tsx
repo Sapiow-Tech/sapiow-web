@@ -150,6 +150,7 @@ const ExpertsResultsSection = memo(function ExpertsResultsSection({
                   onProfessionalClick={handleProfessionalClick}
                   lineClamp={3}
                   showPrice={true}
+                  showFirstCallOffer
                 />
               ))}
             </div>
@@ -198,6 +199,7 @@ const ExpertsResultsSection = memo(function ExpertsResultsSection({
               onProfessionalClick={handleProfessionalClick}
               lineClamp={3}
               showPrice={true}
+              showFirstCallOffer
             />
           ))}
         </div>

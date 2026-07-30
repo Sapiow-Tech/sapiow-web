@@ -20,6 +20,7 @@ interface ProfessionalCardProps {
   nameSize?: string;
   iconSize?: number;
   showPrice?: boolean;
+  showFirstCallOffer?: boolean;
 }
 
 export default function ProfessionalCard({
@@ -35,6 +36,7 @@ export default function ProfessionalCard({
   nameSize = "text-sm",
   iconSize = 16,
   showPrice = true,
+  showFirstCallOffer = false,
 }: ProfessionalCardProps) {
   const priceNumberFormatter = useMemo(
     () =>
@@ -173,12 +175,18 @@ export default function ProfessionalCard({
           {showPrice && (
             <p className="text-xs text-black mb-1 truncate">
               {startingFromPrice !== null ? (
-                <>
+                showFirstCallOffer && startingFromPrice === 0 ? (
                   <span className="font-bold font-figtree">
-                    {priceNumberFormatter.format(startingFromPrice)}
-                  </span>{" "}
-                  € / Session
-                </>
+                    1er appel offert
+                  </span>
+                ) : (
+                  <>
+                    <span className="font-bold font-figtree">
+                      {priceNumberFormatter.format(startingFromPrice)}
+                    </span>{" "}
+                    € / Session
+                  </>
+                )
               ) : (
                 ""
               )}
