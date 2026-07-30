@@ -74,6 +74,7 @@ export default function CategorySection({
               onProfessionalClick={onProfessionalClick}
               isLoadingFavorite={isMutatingFavorite}
               lineClamp={3}
+              showFirstCallOffer
             />
           );
         })}

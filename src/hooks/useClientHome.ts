@@ -1,30 +1,10 @@
 import { Expert, useListExperts } from "@/api/listExpert/useListExpert";
 import { useSearchStore } from "@/store/useSearchStore";
 import { Professional } from "@/types/professional";
+import { getStartingFromPrice } from "@/utils/getStartingFromPrice";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useFavoritesLogic } from "./useFavoritesLogic";
-
-const getStartingFromPrice = (sessions: any[] | undefined) => {
-  const list = Array.isArray(sessions) ? sessions : [];
-  const oneTimeActive = list.filter(
-    (s) => s?.is_active === true && s?.session_nature === "one_time"
-  );
-  const oneTimeActiveVideo = oneTimeActive.filter(
-    (s) => s?.video_call === true
-  );
-  const candidates =
-    oneTimeActiveVideo.length > 0 ? oneTimeActiveVideo : oneTimeActive;
-
-  if (candidates.length === 0) return undefined;
-
-  const min = candidates.reduce((acc: number, s: any) => {
-    const price = typeof s?.price === "number" ? s.price : Number(s?.price);
-    return Number.isFinite(price) ? Math.min(acc, price) : acc;
-  }, Number.POSITIVE_INFINITY);
-
-  return Number.isFinite(min) ? min : undefined;
-};
 
 // Mapping function to convert Expert to Professional format
 const mapExpertToProfessional = (expert: Expert): Professional => {
