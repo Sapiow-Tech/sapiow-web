@@ -8,7 +8,7 @@ import {
   setAuthNextPath,
 } from "@/utils/authFlow";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface UseOnboardingLogicReturn {
   isCheckingProfiles: boolean;
@@ -24,6 +24,7 @@ export function useOnboardingLogic(): UseOnboardingLogicReturn {
   const [userType, setUserType] = useState("client");
   const [isCheckingProfiles, setIsCheckingProfiles] = useState(true);
   const [shouldShowOnboarding, setShouldShowOnboarding] = useState(false);
+  const onboardingStartedRef = useRef(false);
 
   const { data: proExpert } = useGetProExpert();
   const { data: customer } = useGetCustomer();
@@ -54,16 +55,18 @@ export function useOnboardingLogic(): UseOnboardingLogicReturn {
     const isFromModeSwitch =
       sessionStorage.getItem("fromModeSwitch") === "true";
 
-    // Attendre que les requêtes se terminent
     const timer = setTimeout(() => {
+      if (onboardingStartedRef.current) return;
+
       const isProEmpty = checkIfEmpty(proExpert);
       const isCustomerEmpty = checkIfEmpty(customer);
 
       // Si l'utilisateur vient du switch mode client, aller directement à l'étape client
       if (isFromModeSwitch) {
         sessionStorage.removeItem("fromModeSwitch");
-        setStep(1); // Aller directement à l'étape 1
-        setUserType("client"); // Configurer le type client
+        setStep(1);
+        setUserType("client");
+        onboardingStartedRef.current = true;
         setIsCheckingProfiles(false);
         setShouldShowOnboarding(true);
         return;
@@ -74,22 +77,22 @@ export function useOnboardingLogic(): UseOnboardingLogicReturn {
         sessionStorage.getItem("switchToExpert") === "true";
       if (isSwitchToExpert) {
         sessionStorage.removeItem("switchToExpert");
-        setStep(1); // Aller directement à l'étape 1
-        setUserType("expert"); // Configurer le type expert
+        setStep(1);
+        setUserType("expert");
+        onboardingStartedRef.current = true;
         setIsCheckingProfiles(false);
         setShouldShowOnboarding(true);
         return;
       }
 
-      // Si au moins un profil existe, rediriger vers home
+      // Si au moins un profil existe, rediriger vers home (premier chargement uniquement)
       if (!isProEmpty || !isCustomerEmpty) {
-        // Déterminer le type d'utilisateur
         if (!isCustomerEmpty && isProEmpty) {
           setUser({ type: "client" });
         } else if (isCustomerEmpty && !isProEmpty) {
           setUser({ type: "expert" });
         } else {
-          setUser({ type: "expert" }); // Privilégier expert si les deux existent
+          setUser({ type: "expert" });
         }
         if (authNextPath) {
           clearAuthNextPath();
@@ -100,10 +103,10 @@ export function useOnboardingLogic(): UseOnboardingLogicReturn {
         return;
       }
 
-      // Si aucun profil n'existe, rester sur onboarding
+      onboardingStartedRef.current = true;
       setIsCheckingProfiles(false);
       setShouldShowOnboarding(true);
-    }, 1500); // Attendre 1.5s pour laisser le temps aux requêtes
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, [proExpert, customer, router, searchParams, setUser]);
