@@ -8,14 +8,18 @@ import {
 } from "@/api/proExpert/useProExpert";
 import { useCreateProSession } from "@/api/sessions/useSessions";
 import { useUserStore } from "@/store/useUser";
-import { OnboardingExpertData, mapDomainIdToNumeric } from "@/types/onboarding";
+import {
+  isInitialExpertDataValid,
+  OnboardingExpertData,
+  mapDomainIdToNumeric,
+} from "@/types/onboarding";
 import {
   clearAuthNextPath,
   getAuthNextPath,
   sanitizeInternalNextPath,
 } from "@/utils/authFlow";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export interface VisioOption {
   duration: number;
@@ -23,19 +27,36 @@ export interface VisioOption {
   price: string;
 }
 
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof (error as { message: unknown }).message === "string"
+  ) {
+    return (error as { message: string }).message;
+  }
+  return "Une erreur est survenue lors de l'inscription";
+};
+
 export const useOnboardingExpert = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setUser } = useUserStore();
   const [step, setStep] = useState(1);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [proProfileReady, setProProfileReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSavingStep, setIsSavingStep] = useState(false);
+  const [isFinishing, setIsFinishing] = useState(false);
 
-  // Hook pour l'appel API
   const onboardingMutation = useOnboardingExpertPro();
   const updateProMutation = useUpdateProExpert();
   const { data: existingPro } = useGetProExpert();
   const { data: customer } = useGetCustomer();
-  const [pendingAddSessions, setPendingAddSessions] = useState<boolean>(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [profession, setProfession] = useState("");
@@ -47,8 +68,6 @@ export const useOnboardingExpert = () => {
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [avatar, setAvatar] = useState<File | null>(null);
-  const getPostOnboardingPath = () =>
-    sanitizeInternalNextPath(searchParams.get("next")) || getAuthNextPath();
   const [visioOptions, setVisioOptions] = useState<VisioOption[]>([
     { duration: 15, enabled: false, price: "" },
     { duration: 30, enabled: false, price: "" },
@@ -70,11 +89,17 @@ export const useOnboardingExpert = () => {
 
   const { mutateAsync: createProSession } = useCreateProSession();
 
-  // Initialisation: démarrer à l'étape 2 si demandé + pré-remplir prénom/nom/job (email optionnel)
+  const hasProProfile = Boolean(existingPro) || proProfileReady;
+
+  useEffect(() => {
+    if (existingPro) {
+      setProProfileReady(true);
+    }
+  }, [existingPro]);
+
   useEffect(() => {
     if (hasInitialized) return;
 
-    // 1) step depuis querystring (?step=2) OU sessionStorage (onboardingExpertStartStep)
     let desiredStep: number | null = null;
     try {
       const params = new URLSearchParams(window.location.search);
@@ -95,7 +120,6 @@ export const useOnboardingExpert = () => {
       setStep(desiredStep);
     }
 
-    // 2) Préfill depuis sessionStorage, sinon customer/pro existant
     let prefill: { first_name?: string; last_name?: string } = {};
     try {
       const raw = sessionStorage.getItem("onboardingExpertPrefill");
@@ -123,7 +147,6 @@ export const useOnboardingExpert = () => {
     if (!firstName && fallbackFirstName) setFirstName(fallbackFirstName);
     if (!lastName && fallbackLastName) setLastName(fallbackLastName);
 
-    // Cleanup des flags one-shot
     try {
       sessionStorage.removeItem("onboardingExpertStartStep");
       sessionStorage.removeItem("onboardingExpertPrefill");
@@ -134,17 +157,14 @@ export const useOnboardingExpert = () => {
     setHasInitialized(true);
   }, [hasInitialized, customer, existingPro, firstName, lastName]);
 
-  // Validations
   const isFormValid =
     firstName.trim().length > 0 &&
     lastName.trim().length > 0 &&
     profession.trim().length > 0 &&
-    // email optionnel, mais s'il est rempli il doit être valide
     (!email.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()));
 
   const isDomainValid = !!selectedDomain;
   const isSpecialtyValid = selectedSpecialties.length > 0;
-  // Validation des sessions : si une session est activée, elle doit avoir un prix >= 0 (0 est accepté pour les consultations gratuites)
   const isVisioValid = visioOptions.every(
     (option) =>
       !option.enabled ||
@@ -154,10 +174,187 @@ export const useOnboardingExpert = () => {
         Number(option.price) >= 0)
   );
 
-  // Actions
   const nextStep = () => setStep((prev) => prev + 1);
   const prevStep = () => setStep((prev) => Math.max(1, prev - 1));
   const goToStep = (stepNumber: number) => setStep(stepNumber);
+
+  const buildBaseProfileData = useCallback((): OnboardingExpertData => {
+    return {
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
+      email: email.trim() || undefined,
+      job: profession.trim() || undefined,
+      domain_id: selectedDomain
+        ? mapDomainIdToNumeric(selectedDomain) || 0
+        : 0,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    };
+  }, [email, firstName, lastName, profession, selectedDomain]);
+
+  const redirectToExpertHome = useCallback(() => {
+    setUser({ type: "expert" });
+    const nextPath =
+      sanitizeInternalNextPath(searchParams.get("next")) || getAuthNextPath();
+    if (nextPath) {
+      clearAuthNextPath();
+      router.push(nextPath);
+    } else {
+      router.push("/");
+    }
+  }, [router, searchParams, setUser]);
+
+  const createInitialProProfile = useCallback(
+    async (data: OnboardingExpertData) => {
+      if (!isInitialExpertDataValid(data)) {
+        throw new Error(
+          "Données invalides. Veuillez vérifier tous les champs requis."
+        );
+      }
+      await onboardingMutation.mutateAsync(data);
+      setProProfileReady(true);
+    },
+    [onboardingMutation]
+  );
+
+  const saveStep1AndContinue = async () => {
+    if (!isFormValid) return;
+
+    setError(null);
+    setIsSavingStep(true);
+    try {
+      const data = buildBaseProfileData();
+
+      if (hasProProfile) {
+        await updateProMutation.mutateAsync({
+          first_name: data.first_name,
+          last_name: data.last_name,
+          email: data.email,
+          job: data.job,
+          timezone: data.timezone,
+        });
+      } else {
+        await createInitialProProfile(data);
+      }
+
+      nextStep();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setIsSavingStep(false);
+    }
+  };
+
+  const saveStep2AndContinue = async () => {
+    if (!isDomainValid || !selectedDomain) return;
+
+    setError(null);
+    setIsSavingStep(true);
+    try {
+      const domainId = mapDomainIdToNumeric(selectedDomain);
+
+      if (hasProProfile) {
+        await updateProMutation.mutateAsync({ domain_id: domainId });
+      } else {
+        const data = buildBaseProfileData();
+        data.domain_id = domainId;
+        await onboardingMutation.mutateAsync(data);
+        setProProfileReady(true);
+      }
+
+      nextStep();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setIsSavingStep(false);
+    }
+  };
+
+  const saveStep3AndContinue = async () => {
+    if (!isSpecialtyValid) return;
+
+    setError(null);
+    setIsSavingStep(true);
+    try {
+      const expertisesPayload = selectedSpecialties.map((expertiseId) => ({
+        expertise_id: expertiseId,
+      }));
+
+      await updateProMutation.mutateAsync({
+        expertises: expertisesPayload,
+      });
+
+      nextStep();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setIsSavingStep(false);
+    }
+  };
+
+  const saveStep4AndContinue = async () => {
+    setError(null);
+    setIsSavingStep(true);
+    try {
+      await updateProMutation.mutateAsync({
+        description: aboutMe.trim() || undefined,
+        linkedin: linkedinUrl.trim() || undefined,
+        website: websiteUrl.trim() || undefined,
+        ...(avatar && { avatar }),
+      });
+
+      nextStep();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setIsSavingStep(false);
+    }
+  };
+
+  const finishOnboardingLater = () => {
+    redirectToExpertHome();
+  };
+
+  const finishOnboardingWithSessions = async () => {
+    setIsFinishing(true);
+    setError(null);
+
+    try {
+      const enabledOptions = visioOptions.filter(
+        (option) =>
+          option.enabled &&
+          option.price !== "" &&
+          option.price !== null &&
+          option.price !== undefined &&
+          Number(option.price) >= 0
+      );
+
+      for (const option of enabledOptions) {
+        const sessionData = {
+          price: Number(option.price),
+          session_type: `${option.duration}m` as "15m" | "30m" | "45m" | "60m",
+          session_nature: "one_time" as const,
+          one_on_one: true,
+          video_call: true,
+          mentorship: true,
+          name: `Consultation ${option.duration} minutes`,
+          is_active: true,
+        };
+
+        try {
+          await createProSession(sessionData);
+        } catch (sessionError) {
+          console.error(
+            `Erreur lors de la création de la session ${option.duration}m:`,
+            sessionError
+          );
+        }
+      }
+
+      redirectToExpertHome();
+    } finally {
+      setIsFinishing(false);
+    }
+  };
 
   const handleSpecialtyToggle = (expertiseId: number) => {
     setSelectedSpecialties((prev) =>
@@ -165,6 +362,7 @@ export const useOnboardingExpert = () => {
         ? prev.filter((id) => id !== expertiseId)
         : [...prev, expertiseId]
     );
+    setError(null);
   };
 
   const updateVisioOption = (
@@ -174,7 +372,6 @@ export const useOnboardingExpert = () => {
   ) => {
     setVisioOptions((prev) => {
       const newOptions = [...prev];
-      // Si on active l'option (enabled devient true) et que le prix est vide, mettre 0 par défaut
       if (field === "enabled" && value === true && !newOptions[index].price) {
         newOptions[index] = {
           ...newOptions[index],
@@ -192,185 +389,7 @@ export const useOnboardingExpert = () => {
     setAvatar(file);
   };
 
-  const submitExpertProfile = useMemo(() => {
-    return async (data: OnboardingExpertData) => {
-      // Si un pro existe déjà (ex: créé minimalement via switch), on met à jour au lieu de re-créer
-      if (existingPro) {
-        return updateProMutation.mutateAsync({
-          first_name: data.first_name,
-          last_name: data.last_name,
-          email: data.email,
-          domain_id: data.domain_id,
-          description: data.description,
-          job: data.job,
-          linkedin: data.linkedin,
-          website: data.website,
-          expertises: data.expertises,
-          schedules: data.schedules,
-          timezone: data.timezone,
-          avatar: data.avatar,
-        });
-      }
-      return onboardingMutation.mutateAsync(data);
-    };
-  }, [existingPro, onboardingMutation, updateProMutation]);
-
-  // Fonction pour créer seulement l'expert (sans sessions) - utilisée pour "Plus tard"
-  const completeOnboardingWithoutSessions = async () => {
-    try {
-      // Mapper les spécialités vers le format API attendu
-      const expertises = selectedSpecialties.map((expertiseId) => ({
-        expertise_id: expertiseId,
-      }));
-
-      // Préparer les données pour l'API
-      const onboardingData: OnboardingExpertData = {
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
-        email: email.trim(),
-        domain_id: selectedDomain
-          ? mapDomainIdToNumeric(selectedDomain) || 0
-          : 0,
-        description: aboutMe.trim() || undefined,
-        linkedin: linkedinUrl.trim() || undefined,
-        website: websiteUrl.trim() || undefined,
-        job: profession.trim() || undefined,
-        expertises: expertises.length > 0 ? expertises : undefined,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        ...(avatar && { avatar }),
-      };
-
-      await submitExpertProfile(onboardingData);
-
-      // Rediriger vers la page d'accueil après succès
-      setUser({ type: "expert" });
-      const nextPath = getPostOnboardingPath();
-      if (nextPath) {
-        clearAuthNextPath();
-        router.push(nextPath);
-      } else {
-        router.push("/");
-      }
-    } catch (error) {
-      console.error("❌ Erreur lors de l'onboarding expert:", error);
-    }
-  };
-
-  // Fonction pour créer l'expert avec les sessions - utilisée pour "Terminer"
-  // Cette fonction envoie TOUTES les données remplies : infos personnelles, domaine, spécialités, description, liens, avatar, et sessions
-  const completeOnboarding = async () => {
-    try {
-      // Mapper les spécialités vers le format API attendu
-      const expertises = selectedSpecialties.map((expertiseId) => ({
-        expertise_id: expertiseId,
-      }));
-
-      // Préparer TOUTES les données pour l'API (étape 1 à 4)
-      const onboardingData: OnboardingExpertData = {
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
-        email: email.trim(),
-        domain_id: selectedDomain
-          ? mapDomainIdToNumeric(selectedDomain) || 0
-          : 0,
-        description: aboutMe.trim() || undefined,
-        job: profession.trim() || undefined,
-        linkedin: linkedinUrl.trim() || undefined,
-        website: websiteUrl.trim() || undefined,
-        expertises: expertises.length > 0 ? expertises : undefined,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        ...(avatar && { avatar }),
-      };
-
-      // ÉTAPE 1: Soumettre toutes les données de l'expert à l'API
-      const expertResult: any = await submitExpertProfile(onboardingData);
-
-      // ÉTAPE 2: Créer TOUTES les sessions activées avec un prix >= 0 (0 est accepté pour les consultations gratuites)
-      const enabledOptions = visioOptions.filter(
-        (option) =>
-          option.enabled &&
-          option.price !== "" &&
-          option.price !== null &&
-          option.price !== undefined &&
-          Number(option.price) >= 0
-      );
-
-      const proId =
-        existingPro?.id ??
-        expertResult?.data?.id ??
-        expertResult?.expert_id ??
-        expertResult?.id;
-
-      if (proId && enabledOptions.length > 0) {
-        setPendingAddSessions(true);
-        // Créer toutes les sessions une par une en attendant chacune
-        for (const option of enabledOptions) {
-          const sessionData = {
-            price: Number(option.price),
-            session_type: `${option.duration}m` as any,
-            session_nature: "one_time" as any,
-            one_on_one: true,
-            video_call: true,
-            mentorship: true,
-            name: `Consultation ${option.duration} minutes`,
-            is_active: true,
-          };
-
-          try {
-            // Utiliser mutateAsync pour attendre correctement chaque création
-            await createProSession(sessionData);
-            console.log(`✅ Session ${option.duration}m créée avec succès`);
-            setPendingAddSessions(false);
-          } catch (sessionError) {
-            setPendingAddSessions(false);
-            console.error(
-              `❌ Erreur lors de la création de la session ${option.duration}m:`,
-              sessionError
-            );
-            // Continuer avec les autres sessions même en cas d'erreur
-          }
-        }
-      }
-
-      // Rediriger vers la page d'accueil après succès complet
-      setUser({ type: "expert" });
-      const nextPath = getPostOnboardingPath();
-      if (nextPath) {
-        clearAuthNextPath();
-        router.push(nextPath);
-      } else {
-        router.push("/");
-      }
-    } catch (error) {
-      console.error("❌ Erreur lors de l'onboarding expert:", error);
-    }
-  };
-
-  // Fonction pour gérer "Plus tard"
-  const handleSkipToLater = () => {
-    // Vérifier si les données minimales sont valides
-    if (isFormValid && isDomainValid) {
-      // Si les données de base sont valides, rediriger vers la racine
-      setUser({ type: "expert" });
-      const nextPath = getPostOnboardingPath();
-      if (nextPath) {
-        clearAuthNextPath();
-        router.push(nextPath);
-      } else {
-        router.push("/");
-      }
-    } else {
-      // Sinon, afficher un message d'erreur
-      console.error("Données incomplètes pour continuer plus tard");
-      // TODO: Afficher un toast d'erreur ou un message à l'utilisateur
-      alert(
-        "Veuillez remplir au minimum les informations personnelles et sélectionner un domaine avant de continuer."
-      );
-    }
-  };
-
   return {
-    // State
     step,
     firstName,
     lastName,
@@ -384,20 +403,16 @@ export const useOnboardingExpert = () => {
     avatar,
     visioOptions,
 
-    // Validations
     isFormValid,
     isDomainValid,
     isSpecialtyValid,
     isVisioValid,
 
-    // Loading state
-    isSubmitting:
-      onboardingMutation.isPending ||
-      updateProMutation.isPending ||
-      pendingAddSessions,
-    error: onboardingMutation.error || updateProMutation.error,
+    isSavingStep,
+    isFinishing,
+    isSubmitting: isSavingStep || isFinishing,
+    error,
 
-    // Données des domaines et expertises
     domains,
     isLoadingDomains,
     expertises,
@@ -405,34 +420,35 @@ export const useOnboardingExpert = () => {
     domainsError,
     expertisesError,
 
-    // Setters
     setFirstName,
     setLastName,
     setProfession,
     setEmail,
     setSelectedDomain: (domain: string | null) => {
       setSelectedDomain(domain);
-      // Convertir le string domain en ID numérique pour l'API
       if (domain) {
         const domainId = mapDomainIdToNumeric(domain);
         setSelectedDomainId(domainId);
       } else {
         setSelectedDomainId(null);
       }
+      setError(null);
     },
     setAboutMe,
     setLinkedinUrl,
     setWebsiteUrl,
 
-    // Actions
     nextStep,
     prevStep,
     goToStep,
     handleSpecialtyToggle,
     handleAvatarChange,
     updateVisioOption,
-    completeOnboarding,
-    completeOnboardingWithoutSessions,
-    handleSkipToLater,
+    saveStep1AndContinue,
+    saveStep2AndContinue,
+    saveStep3AndContinue,
+    saveStep4AndContinue,
+    finishOnboardingLater,
+    finishOnboardingWithSessions,
   };
 };
