@@ -46,8 +46,6 @@ export const useOnboardingSeeker = () => {
 
         return response;
       } catch (error: any) {
-        console.error("Erreur lors de l'onboarding seeker:", error);
-
         // Re-throw avec un message utilisateur approprié
         const userError: OnboardingSeekerError = {
           message:
@@ -99,8 +97,6 @@ export const useOnboardingExpertPro = () => {
 
         return response;
       } catch (error: any) {
-        console.error("Erreur lors de l'onboarding expert:", error);
-
         // Re-throw avec un message utilisateur approprié
         const userError: OnboardingExpertError = {
           message:

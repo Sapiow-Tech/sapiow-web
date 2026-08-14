@@ -50,6 +50,7 @@ export const OnboardingExpertSteps: React.FC = () => {
     setLinkedinUrl,
     setWebsiteUrl,
     nextStep,
+    prevStep,
     handleSpecialtyToggle,
     handleAvatarChange,
     updateVisioOption,
@@ -163,17 +164,39 @@ export const OnboardingExpertSteps: React.FC = () => {
           multiSelect={false}
         />
         <Pagination currentStep={2} totalSteps={5} />
-        {error && (
-          <ErrorMessage message={error || t("onboarding.errorOccurred")} />
+        {(error || !isFormValid) && (
+          <ErrorMessage
+            message={
+              error ||
+              "Données invalides. Veuillez vérifier tous les champs requis."
+            }
+          />
         )}
-        <Button
-          label={
-            isSavingStep ? t("onboarding.registering") : t("onboarding.next")
-          }
-          className="w-full rounded-[8px] h-[56px] text-base font-medium"
-          disabled={!isDomainValid || isSavingStep}
-          onClick={saveStep2AndContinue}
-        />
+        {isFormValid ? (
+          <Button
+            label={
+              isSavingStep ? t("onboarding.registering") : t("onboarding.next")
+            }
+            className="w-full rounded-[8px] h-[56px] text-base font-medium"
+            disabled={!isDomainValid || !isFormValid || isSavingStep}
+            onClick={saveStep2AndContinue}
+          />
+        ) : (
+          <div className="flex gap-4 w-full">
+            <Button
+              label={t("onboarding.back")}
+              className="w-1/2 rounded-[8px] h-[56px] text-base font-medium bg-white border border-gray-300 text-exford-blue hover:bg-gray-50"
+              variant="outline"
+              onClick={prevStep}
+            />
+            <Button
+              label={t("onboarding.next")}
+              className="w-1/2 rounded-[8px] h-[56px] text-base font-medium"
+              disabled={!isDomainValid || !isFormValid || isSavingStep}
+              onClick={saveStep2AndContinue}
+            />
+          </div>
+        )}
       </div>
     );
   }

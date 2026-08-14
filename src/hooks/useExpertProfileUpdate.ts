@@ -7,7 +7,6 @@ import {
 import { authUtils } from "@/utils/auth";
 import { showToast } from "@/utils/toast";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 export interface ExpertFormData {
@@ -30,7 +29,6 @@ export interface UseExpertProfileUpdateProps {
 export const useExpertProfileUpdate = ({
   user,
 }: UseExpertProfileUpdateProps) => {
-  const router = useRouter();
   const t = useTranslations();
 
   // États pour les champs du formulaire
@@ -320,18 +318,18 @@ export const useExpertProfileUpdate = ({
 
   const handleConfirmDelete = useCallback(async () => {
     try {
-      console.log("Suppression du compte expert en cours...");
+      console.log("[delete-account] expert DELETE start");
       await deleteProExpert();
-      console.log("✅ Compte expert supprimé avec succès");
-
-      // Déconnexion propre via Supabase
-      await authUtils.signOut();
-      router.push("/login");
+      console.log("[delete-account] expert DELETE success");
     } catch (error) {
-      console.error("❌ Erreur lors de la suppression du compte:", error);
-      setIsDeleteModalOpen(false);
+      console.error("[delete-account] expert DELETE error:", error);
+    } finally {
+      console.log("[delete-account] expert local logout");
+      await authUtils.signOutLocal();
+      console.log("[delete-account] expert redirect /login");
+      window.location.assign("/login");
     }
-  }, [deleteProExpert, router]);
+  }, [deleteProExpert]);
 
   const handleCloseDeleteModal = useCallback(() => {
     if (!isDeleting) {

@@ -135,6 +135,22 @@ export const authUtils = {
   },
 
   /**
+   * Déconnexion locale uniquement (pas d'appel GoTrue).
+   * Vide les cookies de session Supabase après anonymisation du user Auth.
+   */
+  signOutLocal: async (): Promise<void> => {
+    console.log("[auth] signOutLocal: start");
+    if (typeof document === "undefined") return;
+
+    document.cookie.split(";").forEach((cookie) => {
+      const name = cookie.split("=")[0]?.trim();
+      if (!name.startsWith("sb-") || !name.includes("auth-token")) return;
+      document.cookie = `${name}=; Max-Age=0; path=/`;
+    });
+    console.log("[auth] signOutLocal: cookies cleared");
+  },
+
+  /**
    * Alias pour la compatibilité avec l'ancien code
    * @deprecated Utiliser signOut() à la place
    */
