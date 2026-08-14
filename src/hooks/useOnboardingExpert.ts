@@ -245,6 +245,10 @@ export const useOnboardingExpert = () => {
   };
 
   const saveStep2AndContinue = async () => {
+    if (!isFormValid) {
+      setError("Données invalides. Veuillez vérifier tous les champs requis.");
+      return;
+    }
     if (!isDomainValid || !selectedDomain) return;
 
     setError(null);
@@ -342,11 +346,8 @@ export const useOnboardingExpert = () => {
 
         try {
           await createProSession(sessionData);
-        } catch (sessionError) {
-          console.error(
-            `Erreur lors de la création de la session ${option.duration}m:`,
-            sessionError
-          );
+        } catch {
+          // Keep finishing even if one session fails to create
         }
       }
 

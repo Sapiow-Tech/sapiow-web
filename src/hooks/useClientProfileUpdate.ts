@@ -4,7 +4,6 @@ import {
   useUpdateCustomer,
 } from "@/api/customer/useCustomer";
 import { authUtils } from "@/utils/auth";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 export interface ClientFormData {
@@ -21,8 +20,6 @@ export interface UseClientProfileUpdateProps {
 export const useClientProfileUpdate = ({
   customer,
 }: UseClientProfileUpdateProps) => {
-  const router = useRouter();
-
   // États pour les champs du formulaire
   const [formData, setFormData] = useState<ClientFormData>({
     firstName: "",
@@ -201,18 +198,18 @@ export const useClientProfileUpdate = ({
 
   const handleConfirmDelete = useCallback(async () => {
     try {
-      console.log("Suppression du compte client en cours...");
+      console.log("[delete-account] client DELETE start");
       await deleteCustomer();
-      console.log("✅ Compte client supprimé avec succès");
-
-      // Déconnexion propre via Supabase
-      await authUtils.signOut();
-      router.push("/login");
+      console.log("[delete-account] client DELETE success");
     } catch (error) {
-      console.error("❌ Erreur lors de la suppression du compte:", error);
-      setIsDeleteModalOpen(false);
+      console.error("[delete-account] client DELETE error:", error);
+    } finally {
+      console.log("[delete-account] client local logout");
+      await authUtils.signOutLocal();
+      console.log("[delete-account] client redirect /login");
+      window.location.assign("/login");
     }
-  }, [deleteCustomer, router]);
+  }, [deleteCustomer]);
 
   const handleCloseDeleteModal = useCallback(() => {
     if (!isDeleting) {

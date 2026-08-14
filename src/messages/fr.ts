@@ -88,6 +88,7 @@ export default {
     skipForNow: "Passer pour le moment",
     completeProfile: "Terminer mon profil",
     later: "Plus tard",
+    back: "Retour",
     validate: "Valider",
     skip: "Passer",
     finish: "Terminer",

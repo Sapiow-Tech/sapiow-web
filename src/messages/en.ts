@@ -85,6 +85,7 @@ export default {
     skipForNow: "Skip for now",
     completeProfile: "Complete my profile",
     later: "Later",
+    back: "Back",
     validate: "Validate",
     skip: "Skip",
     finish: "Finish",
