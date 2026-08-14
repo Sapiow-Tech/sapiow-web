@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import {
+  isInitialExpertDataValid,
   isOnboardingExpertDataValid,
   isOnboardingSeekerDataValid,
   OnboardingExpertData,
@@ -74,8 +75,12 @@ export const useOnboardingExpertPro = () => {
     OnboardingExpertData
   >({
     mutationFn: async (data: OnboardingExpertData) => {
-      // Validation des données avant envoi
-      if (!isOnboardingExpertDataValid(data)) {
+      // Validation : création initiale (sans domaine) ou profil complet
+      const isValid =
+        data.domain_id > 0
+          ? isOnboardingExpertDataValid(data)
+          : isInitialExpertDataValid(data);
+      if (!isValid) {
         throw new Error(
           "Données invalides. Veuillez vérifier tous les champs requis."
         );

@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/common/Button";
 import { FormField } from "@/components/common/FormField";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { Textarea } from "@/components/ui/textarea";
 import { DOMAIN_ID_MAPPING } from "@/constants/onboarding";
 import { useOnboardingExpert } from "@/hooks/useOnboardingExpert";
@@ -11,6 +12,12 @@ import { Pagination } from "./Pagination";
 import { ProfilePhotoUpload } from "./ProfilePhotoUpload";
 import { SpecialtySelector } from "./SpecialtySelector";
 import { VisioConfiguration } from "./VisioConfiguration";
+
+const ErrorMessage = ({ message }: { message: string }) => (
+  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-[8px]">
+    <p className="text-sm text-red-600 text-center">{message}</p>
+  </div>
+);
 
 export const OnboardingExpertSteps: React.FC = () => {
   const t = useTranslations();
@@ -25,7 +32,6 @@ export const OnboardingExpertSteps: React.FC = () => {
     aboutMe,
     linkedinUrl,
     websiteUrl,
-    avatar,
     visioOptions,
     isFormValid,
     isDomainValid,
@@ -47,12 +53,27 @@ export const OnboardingExpertSteps: React.FC = () => {
     handleSpecialtyToggle,
     handleAvatarChange,
     updateVisioOption,
-    completeOnboarding,
-    completeOnboardingWithoutSessions,
-    isSubmitting,
+    saveStep1AndContinue,
+    saveStep2AndContinue,
+    saveStep3AndContinue,
+    saveStep4AndContinue,
+    finishOnboardingLater,
+    finishOnboardingWithSessions,
+    isSavingStep,
+    isFinishing,
+    error,
   } = useOnboardingExpert();
 
-  // Étape 1 : Formulaire expert
+  if (step === 5 && isFinishing) {
+    return (
+      <LoadingScreen
+        message={t("onboarding.registering")}
+        size="lg"
+        fullScreen={false}
+      />
+    );
+  }
+
   if (step === 1) {
     return (
       <div className="w-full max-w-[350px] sm:max-w-[380px] lg:max-w-[391px]">
@@ -105,17 +126,21 @@ export const OnboardingExpertSteps: React.FC = () => {
           />
         </div>
         <Pagination currentStep={1} totalSteps={5} />
+        {error && (
+          <ErrorMessage message={error || t("onboarding.errorOccurred")} />
+        )}
         <Button
-          label={t("onboarding.next")}
+          label={
+            isSavingStep ? t("onboarding.registering") : t("onboarding.next")
+          }
           className="w-full rounded-[8px] h-[56px] text-base font-medium"
-          disabled={!isFormValid}
-          onClick={nextStep}
+          disabled={!isFormValid || isSavingStep}
+          onClick={saveStep1AndContinue}
         />
       </div>
     );
   }
 
-  // Étape 2 : Domaine d'exercice
   if (step === 2) {
     return (
       <div className="w-full max-w-[343px] sm:max-w-[380px] lg:max-w-[343px]">
@@ -128,7 +153,6 @@ export const OnboardingExpertSteps: React.FC = () => {
             selectedDomain ? DOMAIN_ID_MAPPING[selectedDomain] : null
           }
           onDomainSelect={(domainId: number) => {
-            // Convert numeric ID back to string ID
             const stringId = Object.keys(DOMAIN_ID_MAPPING).find(
               (key) => DOMAIN_ID_MAPPING[key] === domainId
             );
@@ -139,17 +163,21 @@ export const OnboardingExpertSteps: React.FC = () => {
           multiSelect={false}
         />
         <Pagination currentStep={2} totalSteps={5} />
+        {error && (
+          <ErrorMessage message={error || t("onboarding.errorOccurred")} />
+        )}
         <Button
-          label={t("onboarding.next")}
+          label={
+            isSavingStep ? t("onboarding.registering") : t("onboarding.next")
+          }
           className="w-full rounded-[8px] h-[56px] text-base font-medium"
-          disabled={!isDomainValid}
-          onClick={nextStep}
+          disabled={!isDomainValid || isSavingStep}
+          onClick={saveStep2AndContinue}
         />
       </div>
     );
   }
 
-  // Étape 3 : Choix des spécialités
   if (step === 3 && selectedDomain) {
     return (
       <div className="w-full max-w-[343px] sm:max-w-[380px] lg:max-w-[343px]">
@@ -161,25 +189,30 @@ export const OnboardingExpertSteps: React.FC = () => {
           onSpecialtyToggle={handleSpecialtyToggle}
         />
         <Pagination currentStep={3} totalSteps={5} />
+        {error && (
+          <ErrorMessage message={error || t("onboarding.errorOccurred")} />
+        )}
         <div className="flex gap-4 w-full">
           <Button
             label={t("onboarding.later")}
             className="w-1/2 rounded-[8px] h-[56px] text-base font-medium bg-white border border-gray-300 text-exford-blue hover:bg-gray-50"
             variant="outline"
+            disabled={isSavingStep}
             onClick={nextStep}
           />
           <Button
-            label={t("onboarding.next")}
+            label={
+              isSavingStep ? t("onboarding.registering") : t("onboarding.next")
+            }
             className="w-1/2 rounded-[8px] h-[56px] text-base font-medium"
-            disabled={!isSpecialtyValid}
-            onClick={nextStep}
+            disabled={!isSpecialtyValid || isSavingStep}
+            onClick={saveStep3AndContinue}
           />
         </div>
       </div>
     );
   }
 
-  // Étape 4 : Terminez votre profil
   if (step === 4) {
     return (
       <div className="w-full max-w-[350px] sm:max-w-[380px] lg:max-w-[391px]">
@@ -223,24 +256,30 @@ export const OnboardingExpertSteps: React.FC = () => {
         </div>
 
         <Pagination currentStep={4} totalSteps={5} />
+        {error && (
+          <ErrorMessage message={error || t("onboarding.errorOccurred")} />
+        )}
         <div className="flex gap-4 w-full">
           <Button
             label={t("onboarding.later")}
             className="w-1/2 rounded-[8px] h-[56px] text-base font-medium bg-white border border-gray-300 text-exford-blue hover:bg-gray-50"
             variant="outline"
+            disabled={isSavingStep}
             onClick={nextStep}
           />
           <Button
-            label={t("onboarding.next")}
+            label={
+              isSavingStep ? t("onboarding.registering") : t("onboarding.next")
+            }
             className="w-1/2 rounded-[8px] h-[56px] text-base font-medium"
-            onClick={nextStep}
+            disabled={isSavingStep}
+            onClick={saveStep4AndContinue}
           />
         </div>
       </div>
     );
   }
 
-  // Étape 5 : Ajout de la première visio
   if (step === 5) {
     return (
       <div className="w-full max-w-[343px] sm:max-w-[380px] lg:max-w-[343px]">
@@ -254,13 +293,13 @@ export const OnboardingExpertSteps: React.FC = () => {
             label={t("onboarding.later")}
             className="w-1/2 rounded-[8px] h-[56px] text-base font-medium bg-white border border-gray-300 text-exford-blue hover:bg-gray-50"
             variant="outline"
-            onClick={completeOnboardingWithoutSessions}
+            onClick={finishOnboardingLater}
           />
           <Button
-            label={isSubmitting ? t("loading") : t("onboarding.finish")}
+            label={t("onboarding.finish")}
             className="w-1/2 rounded-[8px] h-[56px] text-base font-medium"
-            disabled={!isVisioValid || isSubmitting}
-            onClick={completeOnboarding}
+            disabled={!isVisioValid}
+            onClick={finishOnboardingWithSessions}
           />
         </div>
       </div>

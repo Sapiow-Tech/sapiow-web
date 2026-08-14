@@ -244,7 +244,9 @@ export const transformOnboardingExpertToFormData = (
   if (data.email) {
     formData.append("email", data.email.trim());
   }
-  formData.append("domain_id", data.domain_id.toString());
+  if (data.domain_id > 0) {
+    formData.append("domain_id", data.domain_id.toString());
+  }
   if (data.timezone) {
     formData.append("timezone", data.timezone);
   }
@@ -318,4 +320,19 @@ export const isOnboardingExpertDataValid = (
 ): boolean => {
   const validation = validateOnboardingExpertData(data);
   return validation.isFormValid;
+};
+
+/**
+ * Validation pour la création initiale du profil expert (étape 1, sans domaine)
+ */
+export const isInitialExpertDataValid = (
+  data: OnboardingExpertData
+): boolean => {
+  const isFirstNameValid = data.first_name.trim().length > 0;
+  const isLastNameValid = data.last_name.trim().length > 0;
+  const isEmailValid =
+    !data.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email);
+  const isJobValid = Boolean(data.job?.trim());
+
+  return isFirstNameValid && isLastNameValid && isEmailValid && isJobValid;
 };
