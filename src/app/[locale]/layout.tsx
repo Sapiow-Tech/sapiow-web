@@ -25,6 +25,15 @@ const SITE_URL = "https://app.sapiow.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+    },
+  },
   title: "Sapiow - Réservez des consultations avec des experts en ligne",
   description:
     "Connectez-vous avec des experts qualifiés pour des consultations vidéo sur Sapiow.",
