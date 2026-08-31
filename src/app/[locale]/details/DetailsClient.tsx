@@ -28,6 +28,11 @@ import {
   useGetProExpert,
   useGetProExpertById,
 } from "@/api/proExpert/useProExpert";
+import {
+  findSponsoForPro,
+  useActiveSponsoBanners,
+} from "@/api/sponso/useSponso";
+import { SponsoredBanner } from "@/components/sponso/SponsoredBanner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useIsMobileOrTablet } from "@/hooks/use-mobile-tablet";
 import { useDetailsLogic } from "@/hooks/useDetailsLogic";
@@ -149,6 +154,8 @@ function ProfessionalDetailContent() {
     toggleDescriptionExpanded,
     setIsDescriptionExpanded,
   } = useDetailsLogic(expertData, { favoritesEnabled: isAuthenticated });
+  const { data: sponsoBanners } = useActiveSponsoBanners();
+  const sponsoBanner = findSponsoForPro(sponsoBanners, expertId);
   console.log("professional", professional);
 
   const priceNumberFormatter = useMemo(
@@ -325,10 +332,15 @@ function ProfessionalDetailContent() {
   const imageHeight = 378;
   const maxWidth = isMobile ? "max-w-[358px]" : "max-w-[303px]";
   return (
-    <div className="flex w-full">
-      <AppSidebar />
-      <div className="w-full flex-1">
-        <HeaderClient isBack classNameIsBack="py-1" />
+    <div className="flex min-h-screen w-full flex-col bg-white">
+      {sponsoBanner && (
+        <SponsoredBanner banner={sponsoBanner} showSponsoredLabel />
+      )}
+
+      <div className="flex min-h-0 flex-1 lg:flex">
+        <AppSidebar />
+        <div className="w-full min-w-0 flex-1">
+          <HeaderClient isBack classNameIsBack="py-1" />
         {/* <Expert /> */}
         <div className="w-full grid grid-cols-1 lg:grid-cols-[2fr_1fr] xl:grid-cols-[1fr_386px] gap-6 pl-5 pb-20 lg:pb-0 pr-5 md:pr-0 bg-white">
           <div className="w-full min-w-0 overflow-hidden">
@@ -807,6 +819,7 @@ function ProfessionalDetailContent() {
           </Sheet>
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -36,6 +36,11 @@ const getNavItems = (t: any) => [
     href: "/compte/offres",
   },
   {
+    label: t("account.organization"),
+    icon: "/assets/icons/business.svg",
+    href: "/compte/organisation",
+  },
+  {
     label: t("account.revenue"),
     icon: "/assets/icons/wallet.svg",
     href: "/compte/revenus",

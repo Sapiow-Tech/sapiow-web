@@ -21,6 +21,7 @@ interface ProfessionalCardProps {
   iconSize?: number;
   showPrice?: boolean;
   showFirstCallOffer?: boolean;
+  subtitle?: string;
 }
 
 export default function ProfessionalCard({
@@ -37,6 +38,7 @@ export default function ProfessionalCard({
   iconSize = 16,
   showPrice = true,
   showFirstCallOffer = false,
+  subtitle,
 }: ProfessionalCardProps) {
   const priceNumberFormatter = useMemo(
     () =>
@@ -172,6 +174,11 @@ export default function ProfessionalCard({
               />
             )}
           </div>
+          {subtitle && (
+            <p className="text-xs text-exford-blue font-semibold mb-1 truncate font-figtree">
+              {subtitle}
+            </p>
+          )}
           {showPrice && (
             <p className="text-xs text-black mb-1 truncate">
               {startingFromPrice !== null ? (

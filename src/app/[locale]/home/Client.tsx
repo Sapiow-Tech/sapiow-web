@@ -1,5 +1,7 @@
 "use client";
 import { UpcomingVideoCall } from "@/components/common/DarkSessionCard";
+import type { SponsoBanner } from "@/api/sponso/useSponso";
+import { SponsoCarousel } from "@/components/sponso/SponsoCarousel";
 import { useClientHome } from "@/hooks/useClientHome";
 import { usePatientAppointments } from "@/hooks/usePatientAppointments";
 import { useSearchStore } from "@/store/useSearchStore";
@@ -17,8 +19,6 @@ import CategorySection from "./CategorySection";
 import ProfessionalCard from "./ProfessionalCard";
 import SubCategoryFilter from "./SubCategoryFilter";
 
-// Composant mémorisé pour la section des visios à venir
-// Ne se recharge PAS lors du changement de catégorie
 const UpcomingVisiosSection = memo(function UpcomingVisiosSection({
   upcomingAppointments,
   t,
@@ -56,8 +56,6 @@ const UpcomingVisiosSection = memo(function UpcomingVisiosSection({
   );
 });
 
-// Composant mémorisé pour les résultats d'experts
-// Se recharge UNIQUEMENT lors du changement de catégorie, sous-catégorie ou recherche
 const ExpertsResultsSection = memo(function ExpertsResultsSection({
   isSearchMode,
   searchQuery,
@@ -73,6 +71,9 @@ const ExpertsResultsSection = memo(function ExpertsResultsSection({
   handleToggleLike,
   handleProfessionalClick,
   t,
+  sponsoBanners,
+  sponsoIndex,
+  onSponsoIndexChange,
 }: {
   isSearchMode: boolean;
   searchQuery: string;
@@ -88,17 +89,18 @@ const ExpertsResultsSection = memo(function ExpertsResultsSection({
   handleToggleLike: (professionalId: string) => void;
   handleProfessionalClick: (professional: Professional) => void;
   t: any;
+  sponsoBanners: SponsoBanner[];
+  sponsoIndex: number;
+  onSponsoIndexChange: (index: number) => void;
 }) {
   return (
     <>
-      {/* Titre principal - Afficher un titre différent en mode recherche */}
       <h2 className="my-2 text-lg lg:text-2xl font-normal text-exford-blue font-figtree">
         {isSearchMode
           ? `${t("home.searchResults")} "${searchQuery}"`
           : t("home.accelerateProject")}
       </h2>
 
-      {/* Filtres de catégorie et sous-catégorie - Cachés en mode recherche */}
       {!isSearchMode && (
         <>
           <CategoryFilter
@@ -113,16 +115,21 @@ const ExpertsResultsSection = memo(function ExpertsResultsSection({
               onSortChange={handleSortChange}
             />
           )}
+          {sponsoBanners.length > 0 && (
+            <SponsoCarousel
+              banners={sponsoBanners}
+              index={sponsoIndex}
+              onIndexChange={onSponsoIndexChange}
+            />
+          )}
         </>
       )}
 
-      {/* Affichage des résultats */}
       {isLoading ? (
         <div className="py-6">
           <SkeletonGrid />
         </div>
       ) : isSearchMode ? (
-        // Mode recherche : affichage en grille simple sans catégories
         <div className="py-6">
           {filteredProfessionals.length === 0 ? (
             <div className="flex items-center justify-center min-h-[400px]">
@@ -157,7 +164,6 @@ const ExpertsResultsSection = memo(function ExpertsResultsSection({
           )}
         </div>
       ) : selectedCategory === "top" ? (
-        // Affichage par sections pour "Top"
         <div className="py-6 ">
           {Object.keys(groupedProfessionals).length === 0 ? (
             <div className="flex items-center justify-center min-h-[400px]">
@@ -183,7 +189,6 @@ const ExpertsResultsSection = memo(function ExpertsResultsSection({
           )}
         </div>
       ) : (
-        // Affichage normal pour les autres catégories
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-[repeat(auto-fit,205px)] lg:justify-start gap-4 min-h-[400px]">
           {filteredProfessionals.map((professional: Professional) => (
             <ProfessionalCard
@@ -208,7 +213,17 @@ const ExpertsResultsSection = memo(function ExpertsResultsSection({
   );
 });
 
-export default function Client() {
+type ClientProps = {
+  sponsoBanners: SponsoBanner[];
+  sponsoIndex: number;
+  onSponsoIndexChange: (index: number) => void;
+};
+
+export default function Client({
+  sponsoBanners,
+  sponsoIndex,
+  onSponsoIndexChange,
+}: ClientProps) {
   const t = useTranslations();
   const { searchQuery } = useSearchStore();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -238,7 +253,6 @@ export default function Client() {
   const { confirmedAppointments: upcomingAppointments } =
     usePatientAppointments(isAuthenticated);
 
-  // Déterminer si on est en mode recherche
   const isSearchMode = Boolean(searchQuery && searchQuery.trim().length > 0);
 
   if (error) {
@@ -257,32 +271,31 @@ export default function Client() {
   }
 
   return (
-    <>
-      <div className=" w-full">
-        {/* Section visios confirmées à venir - Mémorisée, ne se recharge PAS */}
-        <UpcomingVisiosSection
-          upcomingAppointments={upcomingAppointments}
-          t={t}
-        />
+    <div className="w-full">
+      <UpcomingVisiosSection
+        upcomingAppointments={upcomingAppointments}
+        t={t}
+      />
 
-        {/* Section résultats d'experts - Mémorisée, se recharge uniquement si nécessaire */}
-        <ExpertsResultsSection
-          isSearchMode={isSearchMode}
-          searchQuery={searchQuery}
-          selectedCategory={selectedCategory}
-          selectedSubCategory={selectedSubCategory}
-          groupedProfessionals={groupedProfessionals}
-          filteredProfessionals={filteredProfessionals}
-          likedProfs={likedProfs}
-          isLoading={isLoading}
-          handleCategoryChange={handleCategoryChange}
-          handleSubCategoryChange={handleSubCategoryChange}
-          handleSortChange={handleSortChange}
-          handleToggleLike={handleToggleLike}
-          handleProfessionalClick={handleProfessionalClick}
-          t={t}
-        />
-      </div>
-    </>
+      <ExpertsResultsSection
+        isSearchMode={isSearchMode}
+        searchQuery={searchQuery}
+        selectedCategory={selectedCategory}
+        selectedSubCategory={selectedSubCategory}
+        groupedProfessionals={groupedProfessionals}
+        filteredProfessionals={filteredProfessionals}
+        likedProfs={likedProfs}
+        isLoading={isLoading}
+        handleCategoryChange={handleCategoryChange}
+        handleSubCategoryChange={handleSubCategoryChange}
+        handleSortChange={handleSortChange}
+        handleToggleLike={handleToggleLike}
+        handleProfessionalClick={handleProfessionalClick}
+        t={t}
+        sponsoBanners={sponsoBanners}
+        sponsoIndex={sponsoIndex}
+        onSponsoIndexChange={onSponsoIndexChange}
+      />
+    </div>
   );
 }

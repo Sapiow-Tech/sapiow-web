@@ -43,9 +43,26 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
   };
 
   const isValidAvatarUrl = (url?: string): boolean => {
-    if (!url) return false;
+    if (!url || url === "undefined") return false;
     return url.startsWith("http://") || url.startsWith("https://");
   };
+
+  const getInitials = (label: string): string => {
+    const parts = label.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return "?";
+    if (parts.length === 1) return parts[0][0]?.toUpperCase() ?? "?";
+    return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
+  };
+
+  const initialsTextSize = {
+    sm: "text-sm",
+    md: "text-lg",
+    lg: "text-xl",
+    xl: "text-2xl",
+    xl2: "text-3xl",
+  };
+
+  const showInitials = !isValidAvatarUrl(src);
 
   return (
     <div
@@ -53,18 +70,30 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
         sizeClasses[size],
         borderClasses[borderWidth],
         borderColor,
-        "rounded-full overflow-hidden",
+        "rounded-full overflow-hidden shrink-0",
+        showInitials && "bg-snow-blue flex items-center justify-center",
         className
       )}
     >
-      <Image
-        src={isValidAvatarUrl(src) ? src : "/assets/icons/pro1.png"}
-        alt={alt}
-        width={sizeValues[size].width}
-        height={sizeValues[size].height}
-        className="w-full h-full object-cover"
-        quality={100}
-      />
+      {showInitials ? (
+        <span
+          className={cn(
+            "font-figtree font-semibold text-cobalt-blue",
+            initialsTextSize[size]
+          )}
+        >
+          {getInitials(alt)}
+        </span>
+      ) : (
+        <Image
+          src={src}
+          alt={alt}
+          width={sizeValues[size].width}
+          height={sizeValues[size].height}
+          className="w-full h-full object-cover"
+          quality={100}
+        />
+      )}
     </div>
   );
 };

@@ -1,7 +1,10 @@
 "use client";
+import { useActiveSponsoBanners } from "@/api/sponso/useSponso";
+import { SponsoredBanner } from "@/components/sponso/SponsoredBanner";
 import { Header } from "@/components/layout/header/Header";
 import { HeaderClient } from "@/components/layout/header/HeaderClient";
 import { AppSidebar } from "@/components/layout/Sidebare";
+import { useSearchStore } from "@/store/useSearchStore";
 import { useUserStore } from "@/store/useUser";
 import { authUtils } from "@/utils/auth";
 import { useLocale, useTranslations } from "next-intl";
@@ -13,14 +16,19 @@ import Expert from "./home/Expert";
 
 function Home() {
   const { user } = useUserStore();
+  const { searchQuery } = useSearchStore();
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [currentUserType, setCurrentUserType] = useState(user.type);
   const [isRedirectingOAuth, setIsRedirectingOAuth] = useState(false);
-  // null = auth not checked yet — avoid forcing "client" during bootstrap
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  const { data: sponsoBanners = [] } = useActiveSponsoBanners();
+  const [sponsoIndex, setSponsoIndex] = useState(0);
+
+  const isSearchMode = Boolean(searchQuery && searchQuery.trim().length > 0);
 
   useEffect(() => {
     authUtils
@@ -29,25 +37,18 @@ function Home() {
       .catch(() => setIsAuthenticated(false));
   }, []);
 
-  // Gérer le retour OAuth de Google Calendar (doit être le premier useEffect)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const authCode = params.get("code");
     const scope = params.get("scope");
 
-    // Si on a un code d'autorisation ET un scope Google Calendar, rediriger immédiatement
     if (authCode && scope?.includes("googleapis.com/auth/calendar")) {
-      console.log(
-        "🔄 Code OAuth Google Calendar détecté, redirection immédiate..."
-      );
       setIsRedirectingOAuth(true);
-      // Redirection immédiate sans délai
       router.replace(`/${locale}/oauth-callback${window.location.search}`);
       return;
     }
   }, [router, locale]);
 
-  // While auth is unresolved, keep store type to avoid a false client↔expert switch
   const viewType =
     isAuthenticated === null
       ? user.type === "expert"
@@ -69,7 +70,16 @@ function Home() {
     setIsTransitioning(false);
   }, [viewType, currentUserType]);
 
-  // Afficher un loader pendant la redirection OAuth
+  useEffect(() => {
+    setSponsoIndex(0);
+  }, [sponsoBanners.length]);
+
+  const activeSponsoBanner = sponsoBanners[sponsoIndex] ?? sponsoBanners[0];
+  const showSponsoTopBand =
+    viewType === "client" &&
+    !isSearchMode &&
+    Boolean(activeSponsoBanner);
+
   if (isRedirectingOAuth) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
@@ -82,51 +92,67 @@ function Home() {
   }
 
   return (
-    <div className="w-full lg:flex min-h-screen bg-white">
-      <AppSidebar />
-      <div className="flex-1 flex flex-col">
-        <div className="transition-all duration-300 ease-in-out sticky top-0 z-20">
-          {viewType === "client" ? (
-            <HeaderClient />
-          ) : (
-            <Header isBorder={true} />
-          )}
-        </div>
-        <div className="flex-1 px-5 relative overflow-hidden">
-          <div
-            className={`transition-all duration-300 ease-in-out transform ${
-              isTransitioning
-                ? "opacity-0 translate-y-2 scale-[0.98]"
-                : "opacity-100 translate-y-0 scale-100"
-            }`}
-          >
-            {viewType === "client" ? <Client /> : <Expert />}
-          </div>
-        </div>
+    <div className="flex min-h-screen w-full flex-col bg-white">
+      {showSponsoTopBand && activeSponsoBanner && (
+        <SponsoredBanner
+          banner={activeSponsoBanner}
+          showSponsoredLabel
+        />
+      )}
 
-        {/* Footer - uniquement sur la home */}
-        <footer className="mt-auto border-t border-soft-ice-gray px-5 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-ash-gray">
-            <Link
-              href={`/${locale}/mentions-legales`}
-              className="hover:underline underline-offset-4 w-fit"
-            >
-              {t("account.legalMentions")}
-            </Link>
-            <Link
-              href={`/${locale}/mentions-legales#tos`}
-              className="hover:underline underline-offset-4 w-fit"
-            >
-              {t("legalMentions.termsOfService")}
-            </Link>
-            <Link
-              href={`/${locale}/mentions-legales#privacy`}
-              className="hover:underline underline-offset-4 w-fit"
-            >
-              {t("legalMentions.privacyPolicy")}
-            </Link>
+      <div className="flex min-h-0 flex-1 lg:flex">
+        <AppSidebar />
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="sticky top-0 z-20 transition-all duration-300 ease-in-out">
+            {viewType === "client" ? (
+              <HeaderClient />
+            ) : (
+              <Header isBorder={true} />
+            )}
           </div>
-        </footer>
+          <div className="relative flex-1 overflow-hidden px-5">
+            <div
+              className={`transition-all duration-300 ease-in-out transform ${
+                isTransitioning
+                  ? "opacity-0 translate-y-2 scale-[0.98]"
+                  : "opacity-100 translate-y-0 scale-100"
+              }`}
+            >
+              {viewType === "client" ? (
+                <Client
+                  sponsoBanners={isSearchMode ? [] : sponsoBanners}
+                  sponsoIndex={sponsoIndex}
+                  onSponsoIndexChange={setSponsoIndex}
+                />
+              ) : (
+                <Expert />
+              )}
+            </div>
+          </div>
+
+          <footer className="mt-auto border-t border-soft-ice-gray px-5 py-4">
+            <div className="flex flex-col gap-2 text-sm text-ash-gray sm:flex-row sm:items-center sm:gap-4">
+              <Link
+                href={`/${locale}/mentions-legales`}
+                className="w-fit underline-offset-4 hover:underline"
+              >
+                {t("account.legalMentions")}
+              </Link>
+              <Link
+                href={`/${locale}/mentions-legales#tos`}
+                className="w-fit underline-offset-4 hover:underline"
+              >
+                {t("legalMentions.termsOfService")}
+              </Link>
+              <Link
+                href={`/${locale}/mentions-legales#privacy`}
+                className="w-fit underline-offset-4 hover:underline"
+              >
+                {t("legalMentions.privacyPolicy")}
+              </Link>
+            </div>
+          </footer>
+        </div>
       </div>
     </div>
   );
