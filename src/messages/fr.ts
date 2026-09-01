@@ -150,7 +150,7 @@ export default {
     // Expert specific
     createExpertAccount:
       "Nous avons besoin de quelques informations pour personnaliser créer votre compte Expert.",
-    exerciseDomain: "Dans quelle domaine exercez vous ?",
+    exerciseDomain: "Dans quelle domaine exercez-vous ?",
     needDomainInfo:
       "Nous avons besoin de connaître votre domaine d'expertise pour vous proposer les meilleures opportunités.",
     specialties: "Vos spécialités",
