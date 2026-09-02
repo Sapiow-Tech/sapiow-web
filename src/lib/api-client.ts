@@ -73,10 +73,6 @@ const isPublicEndpoint = (endpoint: string) => {
   return false;
 };
 
-/** Endpoints publics qui ont besoin du JWT anon pour la gateway Supabase */
-const needsAnonBearer = (endpoint: string) =>
-  endpoint === "sponso" || endpoint.startsWith("sponso/");
-
 /**
  * Client API centralisé avec gestion automatique de l'authentification Supabase
  */
@@ -183,23 +179,18 @@ export const fetchApi = async <T>(
     }
   }
 
-  // Récupération des headers d'authentification via authUtils (session Supabase)
-  const userAuthHeaders = publicEndpoint ? {} : await authUtils.getAuthHeaders();
+  // Gateway Supabase exige toujours un Bearer JWT (user ou anon)
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-  const authHeaders =
-    needsAnonBearer(endpoint) &&
-    !("Authorization" in userAuthHeaders) &&
-    anonKey
-      ? { Authorization: `Bearer ${anonKey}` }
-      : userAuthHeaders;
+  const accessToken = await authUtils.getAccessToken();
+  const bearerToken = accessToken || anonKey;
 
-  const headers = {
+  const headers: Record<string, string> = {
+    apikey: anonKey,
     ...(options.body instanceof FormData
       ? {}
       : { "Content-Type": "application/json" }),
-    apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-    ...authHeaders, // Inclut Authorization: Bearer token si disponible
-    ...options.headers,
+    ...(bearerToken ? { Authorization: `Bearer ${bearerToken}` } : {}),
+    ...(options.headers as Record<string, string> | undefined),
   };
 
   const response = await fetch(`${api.baseUrl}/${endpoint}`, {
@@ -208,10 +199,10 @@ export const fetchApi = async <T>(
   });
 
   if (!response.ok) {
-    // Gestion spéciale des erreurs d'authentification (endpoints protégés uniquement)
+    // Déconnecter uniquement sur 401/403 d'endpoints protégés (jamais sur les publics)
     if (!publicEndpoint && (response.status === 401 || response.status === 403)) {
-      console.log("Erreur d'authentification détectée, nettoyage des tokens");
-      await authUtils.clearTokens();
+      console.log("Erreur d'authentification détectée, déconnexion");
+      await authUtils.signOut();
 
       const error = new Error(
         "Session expirée. Veuillez vous reconnecter."
