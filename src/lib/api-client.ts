@@ -18,6 +18,42 @@ export const api = {
 export interface ApiError extends Error {
   status?: number;
   statusText?: string;
+  response?: { data?: unknown };
+}
+
+function coerceErrorValue(value: unknown): string | null {
+  if (typeof value === "string") return value;
+  if (value != null && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    if (typeof record.message === "string") return record.message;
+    if (typeof record.error === "string") return record.error;
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+export function getApiErrorMessage(
+  error: unknown,
+  fallback = "Une erreur est survenue",
+): string {
+  if (error instanceof Error) {
+    if (error.message && error.message !== "[object Object]") {
+      return error.message;
+    }
+    const responseData = (error as ApiError).response?.data;
+    if (responseData && typeof responseData === "object") {
+      const record = responseData as Record<string, unknown>;
+      const coerced =
+        coerceErrorValue(record.error) ?? coerceErrorValue(record.message);
+      if (coerced) return coerced;
+    }
+  }
+
+  return coerceErrorValue(error) ?? fallback;
 }
 
 /**
@@ -33,8 +69,13 @@ const isPublicEndpoint = (endpoint: string) => {
   // Fiche pro: autoriser `pro/{id}` en public (mais pas `pro` seul)
   if (endpoint.startsWith("pro/") && endpoint.length > "pro/".length)
     return true;
+  if (endpoint === "sponso" || endpoint.startsWith("sponso/")) return true;
   return false;
 };
+
+/** Endpoints publics qui ont besoin du JWT anon pour la gateway Supabase */
+const needsAnonBearer = (endpoint: string) =>
+  endpoint === "sponso" || endpoint.startsWith("sponso/");
 
 /**
  * Client API centralisé avec gestion automatique de l'authentification Supabase
@@ -143,7 +184,14 @@ export const fetchApi = async <T>(
   }
 
   // Récupération des headers d'authentification via authUtils (session Supabase)
-  const authHeaders = publicEndpoint ? {} : await authUtils.getAuthHeaders();
+  const userAuthHeaders = publicEndpoint ? {} : await authUtils.getAuthHeaders();
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+  const authHeaders =
+    needsAnonBearer(endpoint) &&
+    !("Authorization" in userAuthHeaders) &&
+    anonKey
+      ? { Authorization: `Bearer ${anonKey}` }
+      : userAuthHeaders;
 
   const headers = {
     ...(options.body instanceof FormData
@@ -160,8 +208,8 @@ export const fetchApi = async <T>(
   });
 
   if (!response.ok) {
-    // Gestion spéciale des erreurs d'authentification
-    if (response.status === 401 || response.status === 403) {
+    // Gestion spéciale des erreurs d'authentification (endpoints protégés uniquement)
+    if (!publicEndpoint && (response.status === 401 || response.status === 403)) {
       console.log("Erreur d'authentification détectée, nettoyage des tokens");
       await authUtils.clearTokens();
 
@@ -194,8 +242,10 @@ export const fetchApi = async <T>(
           errorMessage = JSON.stringify(errorData.error);
         }
       } else if (errorData.message) {
-        // Sinon, utiliser le champ "message"
-        errorMessage = errorData.message;
+        const coerced = coerceErrorValue(errorData.message);
+        if (coerced) {
+          errorMessage = coerced;
+        }
       } else if (typeof errorData === "string") {
         // Si c'est une chaîne simple
         errorMessage = errorData;

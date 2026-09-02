@@ -4,6 +4,12 @@ import {
   useUpdateProAppointment,
 } from "@/api/appointments/useAppointments";
 import { useGetInfoStripeAccount } from "@/api/proBank/useBank";
+import { useGetOrganization } from "@/api/organization/useOrganization";
+import { useOrganizationAppointments } from "@/api/organization/useOrganizationAppointments";
+import { useOrganizationStatistics } from "@/api/organization/useOrganizationStatistics";
+import RevenueScopeTabs, {
+  type RevenueScope,
+} from "@/components/revenue/RevenueScopeTabs";
 import { useGetProExpert } from "@/api/proExpert/useProExpert";
 import { useGetStatistics } from "@/api/statistics/useStatistics";
 import { LoadingScreen } from "@/components/common/LoadingScreen";
@@ -21,6 +27,7 @@ export default function Expert() {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations();
+  const tOrg = useTranslations("organization");
 
   const { isVideoCallOpen, setIsVideoCallOpen, setAppointmentId } =
     useCallStore();
@@ -29,6 +36,8 @@ export default function Expert() {
   const [loadingStates, setLoadingStates] = useState<
     Record<string, "confirming" | "cancelling" | null>
   >({});
+  const [dashboardScope, setDashboardScope] =
+    useState<RevenueScope>("organization");
   const {
     mutateAsync: updateProAppointment,
     isPending: updateProAppointmentPending,
@@ -68,7 +77,22 @@ export default function Expert() {
   };
 
   const { data: proExpert, isLoading: proExpertLoading } = useGetProExpert();
+  const { data: organizationData } = useGetOrganization();
+  const isOrgMember =
+    organizationData?.membership?.role === "member" &&
+    organizationData?.membership?.status === "active";
+  const isOrgOwner =
+    organizationData?.membership?.role === "owner" &&
+    organizationData?.membership?.status === "active";
+  const showOrganizationDashboard =
+    isOrgOwner && dashboardScope === "organization";
+
   const { data: statistics, isLoading: statisticsLoading } = useGetStatistics();
+  const {
+    data: organizationStatistics,
+    isLoading: organizationStatisticsLoading,
+    isFetching: organizationStatisticsFetching,
+  } = useOrganizationStatistics(undefined, isOrgOwner);
   const {
     data: stripeAccountData,
     isLoading: stripeAccountLoading,
@@ -76,22 +100,36 @@ export default function Expert() {
   } = useGetInfoStripeAccount();
 
   const capabilities = stripeAccountData?.account?.capabilities;
-  const isStripeAccountMissing = !stripeAccountData;
-  const isCardPaymentsInactive = capabilities?.card_payments !== "active";
-  const isTransfersInactive = capabilities?.transfers !== "active";
-  const hasStripeError = Boolean(stripeAccountError);
+  const managedByOrganization =
+    stripeAccountData?.managed_by_organization || isOrgMember;
+  const isStripeAccountMissing =
+    !managedByOrganization && !stripeAccountData?.account;
+  const isCardPaymentsInactive =
+    !managedByOrganization &&
+    capabilities?.card_payments !== "active";
+  const isTransfersInactive =
+    !managedByOrganization && capabilities?.transfers !== "active";
+  const hasStripeError =
+    !managedByOrganization && Boolean(stripeAccountError);
   const isStripeStatusReady = !stripeAccountLoading;
 
   // Wait for Stripe response before deciding whether to show the alert
-  const stripeAlertTitle = !isStripeStatusReady
-    ? null
-    : hasStripeError
-      ? t("stripeCreateAccountRequired")
-      : isStripeAccountMissing
-        ? t("stripeCreateAccountRequired")
-        : isCardPaymentsInactive || isTransfersInactive
-          ? t("stripeActionRequiredTitle")
-          : null;
+  const stripeAlertTitle =
+    managedByOrganization || !isStripeStatusReady
+      ? null
+      : hasStripeError
+        ? isOrgOwner
+          ? tOrg("organizationStripeActionRequired")
+          : t("stripeCreateAccountRequired")
+        : isStripeAccountMissing
+          ? isOrgOwner
+            ? tOrg("organizationStripeActionRequired")
+            : t("stripeCreateAccountRequired")
+          : isCardPaymentsInactive || isTransfersInactive
+            ? isOrgOwner
+              ? tOrg("organizationStripeActionRequired")
+              : t("stripeActionRequiredTitle")
+            : null;
 
   const stripeAlertBullets = !stripeAlertTitle
     ? []
@@ -111,13 +149,49 @@ export default function Expert() {
   today.setHours(0, 0, 0, 0);
   const todayISO = today.toISOString();
 
-  const { data: appointments, isLoading: appointmentsLoading } =
-    useGetProAppointments(proExpert?.id, {
+  const {
+    data: personalAppointments,
+    isLoading: personalAppointmentsLoading,
+    isFetching: personalAppointmentsFetching,
+  } = useGetProAppointments(proExpert?.id, {
       gteField: "appointment_at",
       gte: todayISO,
       orderBy: "appointment_at",
       orderDirection: "asc",
     });
+  const {
+    data: organizationAppointments,
+    isLoading: organizationAppointmentsLoading,
+    isFetching: organizationAppointmentsFetching,
+  } = useOrganizationAppointments(
+      {
+        gteField: "appointment_at",
+        gte: todayISO,
+        orderBy: "appointment_at",
+        orderDirection: "asc",
+      },
+      isOrgOwner,
+    );
+
+  const appointments = showOrganizationDashboard
+    ? organizationAppointments
+    : personalAppointments;
+  const appointmentsLoading = showOrganizationDashboard
+    ? organizationAppointmentsLoading
+    : personalAppointmentsLoading;
+  const appointmentsFetching = showOrganizationDashboard
+    ? organizationAppointmentsFetching
+    : personalAppointmentsFetching;
+  const isScopeLoading =
+    appointmentsLoading ||
+    appointmentsFetching ||
+    (isOrgOwner && organizationStatisticsFetching);
+
+  const dashboardStats = showOrganizationDashboard
+    ? organizationStatistics?.organization
+    : isOrgOwner
+      ? organizationStatistics?.personal ?? statistics
+      : statistics;
 
   // Calculer le nombre de demandes en attente
   const pendingAppointments = Array.isArray(appointments)
@@ -127,10 +201,34 @@ export default function Expert() {
     : [];
   const pendingCount = pendingAppointments.length;
 
-  // Gestion du loading
-  if (proExpertLoading || statisticsLoading) {
+  if (proExpertLoading) {
     return <LoadingScreen message={t("loading")} size="md" />;
   }
+
+  const formatSessionDescription = (appointment: any) => {
+    return appointment.session?.name || t("session");
+  };
+
+  const getMemberAppointmentMeta = (appointment: any) => {
+    if (!showOrganizationDashboard) {
+      return {
+        assignedProName: undefined as string | undefined,
+        assignedProAvatar: undefined as string | undefined,
+        readOnly: false,
+      };
+    }
+    const isOtherMember = appointment.pro_id !== proExpert?.id;
+    const proName =
+      `${appointment.pro?.first_name || ""} ${appointment.pro?.last_name || ""}`.trim();
+    return {
+      assignedProName: isOtherMember && proName ? proName : undefined,
+      assignedProAvatar:
+        isOtherMember && appointment.pro?.avatar
+          ? appointment.pro.avatar
+          : undefined,
+      readOnly: isOtherMember,
+    };
+  };
 
   return (
     <>
@@ -155,17 +253,27 @@ export default function Expert() {
                 : t("home.visiosToday")}
             </p>
           </div>
+          {isOrgOwner && (
+            <div className="mt-5">
+              <RevenueScopeTabs
+                value={dashboardScope}
+                onChange={setDashboardScope}
+              />
+            </div>
+          )}
           <div className="w-full flex gap-x-6 mt-5">
             <StatsCard
               title={t("home.completedVisios")}
-              value={statistics?.count ?? 0}
+              value={dashboardStats?.count ?? 0}
               className="w-full"
+              isLoading={isOrgOwner && isScopeLoading}
             />
             <StatsCard
               title={t("home.earningsSummary")}
-              value={statistics?.totalPrice ?? 0}
+              value={dashboardStats?.totalPrice ?? 0}
               currency="€"
               className="w-full"
+              isLoading={isOrgOwner && isScopeLoading}
             />
           </div>
           {stripeAlertTitle && (
@@ -233,9 +341,21 @@ export default function Expert() {
             )}
           </div> */}
           <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-5">
-            {Array.isArray(appointments) && appointments.length > 0 ? (
+            {isScopeLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <SessionCard
+                  key={`skeleton-pending-${i}`}
+                  isLoading={true}
+                  date=""
+                  time=""
+                  profileImage=""
+                  name=""
+                  sessionDescription=""
+                />
+              ))
+            ) : Array.isArray(appointments) && appointments.length > 0 ? (
               appointments
-                .filter((appointment: any) => appointment.type !== "calendar") // Exclure les rendez-vous de type calendar
+                .filter((appointment: any) => appointment.type !== "calendar")
                 .filter((appointment: any) => appointment.status === "pending")
                 .map((appointment: any) => {
                   const appointmentDate = new Date(appointment.appointment_at);
@@ -252,24 +372,21 @@ export default function Expert() {
                       minute: "2-digit",
                     },
                   );
+                  const { assignedProName, assignedProAvatar, readOnly } =
+                    getMemberAppointmentMeta(appointment);
 
                   return (
                     <SessionCard
                       key={appointment.id}
                       date={dateDisplay}
                       time={timeDisplay}
-                      isLoading={appointmentsLoading}
-                      profileImage={
-                        appointment.patient?.avatar || "/assets/icons/pro1.png"
-                      }
+                      profileImage={appointment.patient?.avatar || ""}
                       name={
                         `${appointment.patient?.first_name || ""} ${
                           appointment.patient?.last_name || ""
                         }`.trim() || t("patient")
                       }
-                      sessionDescription={
-                        appointment.session?.name || t("session")
-                      }
+                      sessionDescription={formatSessionDescription(appointment)}
                       onAccept={() => handleConfirmAppointment(appointment.id)}
                       onCancel={() => handleCancelAppointment(appointment.id)}
                       onViewRequest={() => {}}
@@ -281,21 +398,12 @@ export default function Expert() {
                         appointment.patient_id ||
                         appointment.patient?.user_id
                       }
+                      assignedProName={assignedProName}
+                      assignedProAvatar={assignedProAvatar}
+                      readOnly={readOnly}
                     />
                   );
                 })
-            ) : appointmentsLoading ? (
-              Array.from({ length: 3 }).map((_, i) => (
-                <SessionCard
-                  key={`skeleton-pending-${i}`}
-                  isLoading={true}
-                  date=""
-                  time=""
-                  profileImage=""
-                  name=""
-                  sessionDescription=""
-                />
-              ))
             ) : (
               <div className="col-span-full text-center py-0 text-gray-500">
                 {/* {t("home.noPendingRequests")} */}
@@ -307,7 +415,19 @@ export default function Expert() {
               {t("home.nextVisio")}
             </h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mb-20">
-              {Array.isArray(appointments) && appointments.length > 0 ? (
+              {isScopeLoading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <SessionCard
+                    key={`skeleton-next-${i}`}
+                    isLoading={true}
+                    date=""
+                    time=""
+                    profileImage=""
+                    name=""
+                    sessionDescription=""
+                  />
+                ))
+              ) : Array.isArray(appointments) && appointments.length > 0 ? (
                 appointments
                   .filter((appointment: any) => appointment.type !== "calendar") // Exclure les rendez-vous de type calendar
                   .filter(
@@ -357,26 +477,26 @@ export default function Expert() {
                     );
                     const sessionDuration =
                       appointment.session?.session_type || "30mn";
+                    const { assignedProName, assignedProAvatar, readOnly } =
+                      getMemberAppointmentMeta(appointment);
 
                     return (
                       <SessionCard
                         key={appointment.id}
                         date={dateDisplay}
                         time={timeDisplay}
-                        isLoading={appointmentsLoading}
                         profileImage={
+                          appointment.patient?.avatar &&
                           appointment.patient?.avatar !== "undefined"
-                            ? appointment.patient?.avatar
-                            : "/assets/icons/pro1.png"
+                            ? appointment.patient.avatar
+                            : ""
                         }
                         name={
                           `${appointment.patient?.first_name || ""} ${
                             appointment.patient?.last_name || ""
                           }`.trim() || t("patient")
                         }
-                        sessionDescription={
-                          appointment.session?.name || t("session")
-                        }
+                        sessionDescription={formatSessionDescription(appointment)}
                         onAccept={() => handleStartVideoCall(appointment.id)}
                         onViewRequest={() => {}}
                         isComming={true}
@@ -396,21 +516,12 @@ export default function Expert() {
                           appointment.patient_id ||
                           appointment.patient?.user_id
                         }
+                        assignedProName={assignedProName}
+                        assignedProAvatar={assignedProAvatar}
+                        readOnly={readOnly}
                       />
                     );
                   })
-              ) : appointmentsLoading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <SessionCard
-                    key={`skeleton-next-${i}`}
-                    isLoading={true}
-                    date=""
-                    time=""
-                    profileImage=""
-                    name=""
-                    sessionDescription=""
-                  />
-                ))
               ) : (
                 <div className="col-span-full text-center py-8 text-gray-500">
                   {t("home.noScheduledVisio")}

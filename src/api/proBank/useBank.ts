@@ -27,7 +27,9 @@ interface StripeAccount {
 }
 
 interface GetBankResponse {
-  account: StripeAccount;
+  account?: StripeAccount;
+  managed_by_organization?: boolean;
+  organization_stripe?: boolean;
 }
 
 interface CreateBankResponse {

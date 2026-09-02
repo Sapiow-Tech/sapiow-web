@@ -6,6 +6,7 @@ interface StatsCardProps {
   value: string | number;
   currency?: string;
   className?: string;
+  isLoading?: boolean;
 }
 
 export const StatsCard: React.FC<StatsCardProps> = ({
@@ -13,6 +14,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   value,
   currency,
   className = "",
+  isLoading = false,
 }) => {
   // Extraire la valeur numérique et la devise si elles sont dans la même chaîne
   const valueStr = value.toString();
@@ -34,13 +36,19 @@ export const StatsCard: React.FC<StatsCardProps> = ({
         {title}
       </h3>
       <div className="flex items-start">
-        <div className="text-[40px] lg:text-6xl font-bold text-cobalt-blue font-figtree">
-          {numericValue}
-        </div>
-        {currencySymbol && (
-          <div className="text-[20px] lg:text-2xl font-bold text-cobalt-blue ml-1 mt-1 font-figtree">
-            {currencySymbol}
-          </div>
+        {isLoading ? (
+          <div className="h-12 lg:h-16 w-24 bg-gray-200 rounded-lg animate-pulse" />
+        ) : (
+          <>
+            <div className="text-[40px] lg:text-6xl font-bold text-cobalt-blue font-figtree">
+              {numericValue}
+            </div>
+            {currencySymbol && (
+              <div className="text-[20px] lg:text-2xl font-bold text-cobalt-blue ml-1 mt-1 font-figtree">
+                {currencySymbol}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

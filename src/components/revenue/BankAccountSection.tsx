@@ -3,6 +3,7 @@ import {
   useGetInfoStripeAccount,
   useUpdateBank,
 } from "@/api/proBank/useBank";
+import { useGetOrganization } from "@/api/organization/useOrganization";
 import { Button } from "@/components/common/Button";
 import { LoadingModal } from "@/components/common/LoadingModal";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,15 +16,48 @@ function maskAccountId(id: string) {
   return `${id.slice(0, 5)}${"•".repeat(id.length - 8)}${id.slice(-3)}`;
 }
 
-export default function BankAccountSection() {
+export default function BankAccountSection({
+  organizationName,
+  isOrganizationStripe = false,
+}: {
+  organizationName?: string;
+  isOrganizationStripe?: boolean;
+}) {
   const t = useTranslations();
   const { mutate: createStripeAccount } = useCreateAccountStripe();
   const { mutate: updateBank } = useUpdateBank();
   const { data: bankAccount, isLoading: isFetching } =
     useGetInfoStripeAccount();
+  const { data: organizationData } = useGetOrganization();
+  const tOrg = useTranslations("organization");
   const [isLoading, setIsLoading] = useState(false);
 
+  const isOrgOwner =
+    organizationData?.membership?.role === "owner" &&
+    organizationData?.membership?.status === "active";
+  const isOrgMember =
+    organizationData?.membership?.role === "member" &&
+    organizationData?.membership?.status === "active";
+  const managedByOrganization =
+    bankAccount?.managed_by_organization || isOrgMember;
+  const showOrganizationStripe =
+    isOrganizationStripe ||
+    bankAccount?.organization_stripe ||
+    isOrgOwner;
+  const resolvedOrganizationName =
+    organizationName ?? organizationData?.organization?.name ?? "";
+
   const hasBankAccount = !!bankAccount?.account;
+
+  if (managedByOrganization) {
+    return (
+      <div className="space-y-4 ml-0 lg:ml-5">
+        <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 text-sm text-blue-900">
+          {t("stripeManagedByOrganization")}
+        </div>
+      </div>
+    );
+  }
 
   const handlePress = () => {
     setIsLoading(true);
@@ -66,7 +100,11 @@ export default function BankAccountSection() {
       />
       <div className="space-y-6 ml-0 lg:ml-5">
         <h2 className="text-sm font-medium font-figtree text-charcoal-blue hidden lg:block">
-          {t("bankAccount.title")}
+          {showOrganizationStripe
+            ? tOrg("organizationStripeTitle", {
+                name: resolvedOrganizationName,
+              })
+            : t("bankAccount.title")}
         </h2>
 
         <Card className="bg-white border-gray-200 h-[60px]">
@@ -87,10 +125,12 @@ export default function BankAccountSection() {
                     </div>
                     <div className="flex flex-col">
                       <div className="text-sm font-medium text-gray-900">
-                        Stripe Connect
+                        {showOrganizationStripe
+                          ? tOrg("organizationStripeBadge")
+                          : "Stripe Connect"}
                       </div>
                       <div className="text-xs text-gray-500">
-                        {maskAccountId(bankAccount.account.id ?? "")}
+                        {maskAccountId(bankAccount?.account?.id ?? "")}
                       </div>
                     </div>
                   </>

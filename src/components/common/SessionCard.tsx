@@ -47,6 +47,9 @@ interface SessionCardProps {
   appointmentAt?: string;
   isLoading?: boolean;
   conversationParticipantId?: string;
+  assignedProName?: string;
+  assignedProAvatar?: string;
+  readOnly?: boolean;
 }
 
 export const SessionCard: React.FC<SessionCardProps> = ({
@@ -72,8 +75,12 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   appointmentAt,
   isLoading = false,
   conversationParticipantId,
+  assignedProName,
+  assignedProAvatar,
+  readOnly = false,
 }) => {
   const t = useTranslations();
+  const tOrg = useTranslations("organization");
   const [isOpen, setIsOpen] = useState(false);
 
   const handleViewRequest = () => {
@@ -171,74 +178,94 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       </CardHeader>
 
       {/* Profil utilisateur */}
-      <CardContent className="-mt-5">
-        <div className="flex items-center gap-4">
-          <ProfileAvatar
-            src={profileImage}
-            alt={name}
-            size="md"
-            borderColor="border-gray-200"
-            borderWidth="2"
-          />
-          <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-semibold text-gray-900 mb-1 lg:text-[16px] xl:text-xl font-figtree truncate">
-              {name}
-            </h3>
-            <p className="text-gray-600 text-base lg:text-[13px] xl:text-base font-figtree truncate">
-              {sessionDescription}
-            </p>
+      <CardContent className={`-mt-5 ${readOnly ? "pb-4" : ""}`}>
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-4 min-w-0 flex-1">
+            <ProfileAvatar
+              src={profileImage}
+              alt={name}
+              size="md"
+              borderColor="border-gray-200"
+              borderWidth="2"
+            />
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-semibold text-gray-900 mb-0.5 font-figtree truncate">
+                {name}
+              </h3>
+              <p className="text-xs text-gray-600 font-figtree truncate">
+                {sessionDescription}
+              </p>
+            </div>
           </div>
+          {assignedProName && (
+            <div className="flex items-center gap-2 shrink min-w-0 max-w-[48%] ml-auto">
+              <ProfileAvatar
+                src={assignedProAvatar || ""}
+                alt={assignedProName}
+                size="sm"
+                borderColor="border-gray-200"
+                borderWidth="1"
+              />
+              <p className="text-xs font-figtree flex flex-wrap items-baseline gap-x-1 text-left min-w-0">
+                <span className="text-gray-500">{tOrg("assignedProWith")}</span>
+                <span className="text-cobalt-blue font-medium">
+                  {assignedProName}
+                </span>
+              </p>
+            </div>
+          )}
         </div>
       </CardContent>
 
-      {/* Boutons d'action */}
-      <CardFooter className="pb-3">
-        <div
-          className={`flex gap-4 w-full flex-col lg:flex-row ${classFooter}`}
-        >
-          <Button
-            onClick={onAccept}
-            label={
-              loadingState === "confirming" ? (
-                <div className="flex items-center gap-2">
-                  <LoadingSpinner size="sm" />
-                </div>
-              ) : (
-                textButton || t("accept")
-              )
-            }
-            icon={!loadingState ? icon : undefined}
-            className="h-[40px] px-6 rounded-[8px] font-bold font-figtree text-base lg:text-[13px] xl:text-base flex-1"
-            disabled={
-              buttonStates.acceptDisabled || loadingState === "confirming"
-            }
-          />
-
-          {!buttonStates.viewDisabled && (
-            <SessionModal
-              isOpen={isOpen}
-              onOpenChange={setIsOpen}
-              profileImage={profileImage}
-              name={name}
-              sessionDescription={sessionDescription}
-              isUpcoming={isUpcoming}
-              onAccept={onAccept}
-              onCancel={onCancel}
-              questions={questions}
-              loadingState={loadingState}
-              appointmentAt={appointmentAt}
-              conversationParticipantId={conversationParticipantId}
-              trigger={
-                <Button
-                  onClick={handleViewRequest}
-                  label={viewButtonText}
-                  className="text-exford-blue h-[40px] font-bold font-figtree px-6 rounded-[8px] border border-light-blue-gray bg-white text-base lg:text-[13px] xl:text-base hover:bg-gray-200 flex-1"
-                />
+      {!readOnly && (
+        <CardFooter className="pb-3">
+          <div
+            className={`flex gap-4 w-full flex-col lg:flex-row ${classFooter}`}
+          >
+            <Button
+              onClick={onAccept}
+              label={
+                loadingState === "confirming" ? (
+                  <div className="flex items-center gap-2">
+                    <LoadingSpinner size="sm" />
+                  </div>
+                ) : (
+                  textButton || t("accept")
+                )
+              }
+              icon={!loadingState ? icon : undefined}
+              className="h-[40px] px-6 rounded-[8px] font-bold font-figtree text-base lg:text-[13px] xl:text-base flex-1"
+              disabled={
+                buttonStates.acceptDisabled || loadingState === "confirming"
               }
             />
-          )}
-        </div>
-      </CardFooter>
+
+            {!buttonStates.viewDisabled && (
+              <SessionModal
+                isOpen={isOpen}
+                onOpenChange={setIsOpen}
+                profileImage={profileImage}
+                name={name}
+                sessionDescription={sessionDescription}
+                isUpcoming={isUpcoming}
+                onAccept={onAccept}
+                onCancel={onCancel}
+                questions={questions}
+                loadingState={loadingState}
+                appointmentAt={appointmentAt}
+                conversationParticipantId={conversationParticipantId}
+                trigger={
+                  <Button
+                    onClick={handleViewRequest}
+                    label={viewButtonText}
+                    className="text-exford-blue h-[40px] font-bold font-figtree px-6 rounded-[8px] border border-light-blue-gray bg-white text-base lg:text-[13px] xl:text-base hover:bg-gray-200 flex-1"
+                  />
+                }
+              />
+            )}
+          </div>
+        </CardFooter>
+      )}
     </Card>
   );
 };

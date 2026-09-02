@@ -14,6 +14,90 @@ export default {
   stripeCreateAccountRequired: "Create your Stripe account to receive payouts",
   stripeCardPayments: "Card payments",
   stripeTransfers: "Transfers",
+  stripeManagedByOrganization:
+    "Your organization's payments are managed by the owner.",
+
+  organization: {
+    pageTitle: "Organization",
+    loading: "Loading...",
+    createTitle: "Create an organization",
+    createDescription:
+      "Become the owner and set up your organization's Stripe account.",
+    namePlaceholder: "Organization name",
+    createButton: "Create organization",
+    joinTitle: "Join an organization",
+    joinDescription: "Enter the invite code provided by the owner.",
+    codePlaceholder: "Invite code",
+    joinButton: "Submit request",
+    pendingTitle: "Request pending",
+    pendingDescription:
+      "Your request to join {name} is awaiting approval.",
+    refresh: "Refresh",
+    memberPaymentsInfo:
+      "Payments for {name} go through the organization's Stripe account.",
+    memberRole: "Member",
+    ownerRole: "Owner",
+    leaveButton: "Leave organization",
+    ownerTitle: "My organization",
+    save: "Save",
+    inviteCode: "Invite code",
+    copy: "Copy",
+    regenerate: "Regenerate",
+    inviteCodeHelp: "Share this code with experts you want to invite.",
+    requests: "Pending requests",
+    accept: "Accept",
+    refuse: "Decline",
+    members: "Members",
+    remove: "Remove",
+    unknownMember: "Expert",
+    dissolve: "Dissolve organization",
+    dissolveHint: "Remove all members before dissolving the organization.",
+    memberRevenueBlocked:
+      "Revenue and bank account are managed by the organization owner.",
+    creating: "Creating...",
+    processing: "Processing...",
+    requestPending: "Pending request",
+    dissolveConfirmTitle: "Dissolve organization",
+    dissolveConfirmMessage:
+      "This action cannot be undone. The organization and its invite code will be deleted.",
+    dissolveConfirmWarning:
+      "All members will lose access to the organization.",
+    dissolveCancel: "Cancel",
+    dissolveConfirm: "Dissolve",
+    leaveConfirmTitle: "Leave organization",
+    leaveConfirmMessage:
+      "You will no longer be part of this organization. Your payments will go back to your personal account.",
+    leaveConfirm: "Leave",
+    removeConfirmTitle: "Remove member",
+    removeConfirmMessage:
+      "Are you sure you want to remove {name} from the organization?",
+    removeConfirm: "Remove",
+    pendingBadge: "Pending",
+    description: "Description",
+    descriptionPlaceholder: "Describe your organization...",
+    changeImage: "Change image",
+    removeImage: "Remove image",
+    team: "Team",
+    revenueOrganizationTab: "Organization",
+    revenuePersonalTab: "Personal",
+    dashboardOrganizationTab: "Organization",
+    dashboardPersonalTab: "Personal",
+    organizationStripeTitle: "Stripe account for {name}",
+    organizationStripeBadge: "Organization Stripe",
+    personalEarningsTitle: "My earnings",
+    personalRevenueOrgPayoutNote:
+      "Payouts are centralized on your organization's Stripe account.",
+    revenueByMember: "By member",
+    organizationStripeStatus: "Stripe status",
+    organizationStripeValid: "Account verified",
+    organizationStripePending: "Pending verification",
+    organizationStripeNotConfigured: "Not configured",
+    configureStripe: "Configure Stripe",
+    organizationStripeActionRequired:
+      "Complete your organization's Stripe setup to receive payments.",
+    assignedProWith: "With",
+    otherMemberAppointment: "Team member appointment",
+  },
 
   // Login Page
   login: {
@@ -108,7 +192,7 @@ export default {
     cancelled: "Cancelled",
     completed: "Completed",
     // Session Card
-    sessionDuration: "video call of",
+    sessionDuration: "Video call of",
     viewDetails: "View details",
     viewRequest: "View request",
     calendarAlt: "calendar",
@@ -324,6 +408,7 @@ export default {
     availability: "My Availability",
     offers: "My Offers",
     revenue: "Revenue",
+    organization: "Organization",
     paymentHistory: "Payment History",
     notifications: "Notifications",
     language: "Language",
@@ -992,6 +1077,18 @@ export default {
     searchResults: "Search results for",
     noResultsFound: "No results found",
     tryDifferentSearch: "Try different keywords",
+  },
+
+  sponso: {
+    sponsored: "Sponsored",
+    carouselTitle: "Featured",
+    defaultCta: "Book a video call",
+    previous: "Previous",
+    next: "Next",
+    membersTitle: "Our experts",
+    noMembers: "No active members at the moment.",
+    organizationNotFound: "Organization not found.",
+    offeredBy: "Offered by {org}",
   },
 
   // Share Link Button

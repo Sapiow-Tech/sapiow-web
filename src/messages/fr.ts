@@ -15,6 +15,92 @@ export default {
     "Vous devez créer un compte Stripe pour recevoir des paiements.",
   stripeCardPayments: "Paiements par carte",
   stripeTransfers: "Transferts",
+  stripeManagedByOrganization:
+    "Les paiements de votre organisation sont gérés par le propriétaire.",
+
+  organization: {
+    pageTitle: "Organisation",
+    loading: "Chargement...",
+    createTitle: "Créer une organisation",
+    createDescription:
+      "Devenez propriétaire et configurez le compte Stripe de votre organisation.",
+    namePlaceholder: "Nom de l'organisation",
+    createButton: "Créer l'organisation",
+    joinTitle: "Rejoindre une organisation",
+    joinDescription:
+      "Saisissez le code d'invitation fourni par le propriétaire.",
+    codePlaceholder: "Code d'invitation",
+    joinButton: "Envoyer la demande",
+    pendingTitle: "Demande en attente",
+    pendingDescription:
+      "Votre demande pour rejoindre {name} est en cours de validation.",
+    refresh: "Actualiser",
+    memberPaymentsInfo:
+      "Les paiements de {name} passent par le compte Stripe de l'organisation.",
+    memberRole: "Membre",
+    ownerRole: "Propriétaire",
+    leaveButton: "Quitter l'organisation",
+    ownerTitle: "Mon organisation",
+    save: "Enregistrer",
+    inviteCode: "Code d'invitation",
+    copy: "Copier",
+    regenerate: "Régénérer",
+    inviteCodeHelp:
+      "Partagez ce code avec les experts que vous souhaitez inviter.",
+    requests: "Demandes en attente",
+    accept: "Accepter",
+    refuse: "Refuser",
+    members: "Membres",
+    remove: "Retirer",
+    unknownMember: "Expert",
+    dissolve: "Dissoudre l'organisation",
+    dissolveHint: "Retirez tous les membres avant de dissoudre l'organisation.",
+    memberRevenueBlocked:
+      "Les revenus et le compte bancaire sont gérés par le propriétaire de l'organisation.",
+    creating: "Création en cours...",
+    processing: "Traitement...",
+    requestPending: "Demande en attente",
+    dissolveConfirmTitle: "Dissoudre l'organisation",
+    dissolveConfirmMessage:
+      "Cette action est irréversible. L'organisation et son code d'invitation seront supprimés.",
+    dissolveConfirmWarning:
+      "Tous les membres perdront leur accès à l'organisation.",
+    dissolveCancel: "Annuler",
+    dissolveConfirm: "Dissoudre",
+    leaveConfirmTitle: "Quitter l'organisation",
+    leaveConfirmMessage:
+      "Vous ne ferez plus partie de cette organisation. Vos paiements repasseront sur votre compte personnel.",
+    leaveConfirm: "Quitter",
+    removeConfirmTitle: "Retirer ce membre",
+    removeConfirmMessage:
+      "Êtes-vous sûr de vouloir retirer {name} de l'organisation ?",
+    removeConfirm: "Retirer",
+    pendingBadge: "En attente",
+    description: "Description",
+    descriptionPlaceholder: "Décrivez votre organisation...",
+    changeImage: "Changer l'image",
+    removeImage: "Supprimer l'image",
+    team: "Équipe",
+    revenueOrganizationTab: "Organisation",
+    revenuePersonalTab: "Personnel",
+    dashboardOrganizationTab: "Organisation",
+    dashboardPersonalTab: "Personnel",
+    organizationStripeTitle: "Compte Stripe de {name}",
+    organizationStripeBadge: "Stripe organisation",
+    personalEarningsTitle: "Mes revenus",
+    personalRevenueOrgPayoutNote:
+      "Les versements sont centralisés sur le compte Stripe de votre organisation.",
+    revenueByMember: "Par membre",
+    organizationStripeStatus: "Statut Stripe",
+    organizationStripeValid: "Compte validé",
+    organizationStripePending: "En attente de validation",
+    organizationStripeNotConfigured: "Non configuré",
+    configureStripe: "Configurer Stripe",
+    organizationStripeActionRequired:
+      "Complétez le Stripe de votre organisation pour recevoir les paiements.",
+    assignedProWith: "Avec",
+    otherMemberAppointment: "RDV d'un membre de l'équipe",
+  },
 
   // Login Page
   login: {
@@ -64,7 +150,7 @@ export default {
     // Expert specific
     createExpertAccount:
       "Nous avons besoin de quelques informations pour personnaliser créer votre compte Expert.",
-    exerciseDomain: "Dans quelle domaine exercez vous ?",
+    exerciseDomain: "Dans quelle domaine exercez-vous ?",
     needDomainInfo:
       "Nous avons besoin de connaître votre domaine d'expertise pour vous proposer les meilleures opportunités.",
     specialties: "Vos spécialités",
@@ -111,7 +197,7 @@ export default {
     cancelled: "Annulé",
     completed: "Terminé",
     // Session Card
-    sessionDuration: "visio de",
+    sessionDuration: "Visio de",
     viewDetails: "Voir détails",
     viewRequest: "Voir la demande",
     calendarAlt: "calendar",
@@ -329,6 +415,7 @@ export default {
     availability: "Mes disponibilités",
     offers: "Mes offres",
     revenue: "Revenus",
+    organization: "Organisation",
     paymentHistory: "Historique des paiements",
     notifications: "Notifications",
     language: "Langue",
@@ -1006,6 +1093,18 @@ export default {
     searchResults: "Résultats de recherche pour",
     noResultsFound: "Aucun résultat trouvé",
     tryDifferentSearch: "Essayez avec d'autres mots-clés",
+  },
+
+  sponso: {
+    sponsored: "Sponsorisé",
+    carouselTitle: "À la une",
+    defaultCta: "Réserver une visio",
+    previous: "Précédent",
+    next: "Suivant",
+    membersTitle: "Nos experts",
+    noMembers: "Aucun membre actif pour le moment.",
+    organizationNotFound: "Organisation introuvable.",
+    offeredBy: "Offert par {org}",
   },
 
   // Share Link Button
