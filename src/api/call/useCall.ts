@@ -16,6 +16,7 @@ export interface ProStreamUserResponse {
   };
 }
 
+// Get the stream call for the given appointmentId
 export const useGetStreamCall = (appointmentId: string | undefined) => {
   return useQuery({
     queryKey: ["call", appointmentId],
