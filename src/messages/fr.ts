@@ -814,7 +814,7 @@ export default {
     // Offer Selection
     chooseOffer: "Choisissez une offre",
     singleSessions: "Sessions uniques",
-    quickVideoSession: "Session rapide visio",
+    quickVideoSession: "Visio 1:1",
     perfectForSpecificQuestions: "Parfait pour des questions spécifiques",
     startingFrom: "À partir de",
     viewTimeSlots: "Voir les créneaux",
@@ -923,7 +923,7 @@ export default {
     timeNotAvailable: "Heure non disponible",
     session: "Session",
     expert: "Expert",
-    quickVideoSession: "Session rapide visio",
+    quickVideoSession: "Visio 1:1",
     bookSession: "Réserver une séance",
     // Alt texts
     congratulationAlt: "Félicitations",

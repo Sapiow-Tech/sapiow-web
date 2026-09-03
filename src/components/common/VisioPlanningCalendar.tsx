@@ -1098,7 +1098,7 @@ export default function VisioPlanningCalendar({
           <div className="mb-4">
             <h4 className="text-sm font-semibold text-gray-900 mb-1">
               {currentLocale === "fr"
-                ? "Session rapide visio"
+                ? "Visio 1:1"
                 : "Quick video session"}{" "}
               - {selectedDuration}{" "}
               {currentLocale === "fr" ? "minutes" : "minutes"}
