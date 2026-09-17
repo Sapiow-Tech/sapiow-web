@@ -12,7 +12,6 @@ import GoogleCalendarConnectButton from "@/components/common/GoogleCalendarConne
 import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { PeriodType } from "@/components/common/PeriodToggle";
 import { SessionDetailsPanel } from "@/components/common/SessionDetailsPanel";
-import SyncedCalendarsSheet from "@/components/common/SyncedCalendarsSheet";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Sheet,
@@ -45,8 +44,6 @@ export default function Disponibilites() {
   const [showTimeSlotsManager, setShowTimeSlotsManager] = useState(false);
   const [showAvailabilitySheet, setShowAvailabilitySheet] = useState(false);
   const [showSessionDetailsSheet, setShowSessionDetailsSheet] = useState(false);
-  const [showSyncedCalendarsSheet, setShowSyncedCalendarsSheet] =
-    useState(false);
 
   // Hooks Google Calendar
   const { data: googleStatus, isLoading: isGoogleStatusLoading } =
@@ -57,6 +54,14 @@ export default function Disponibilites() {
   // États dérivés
   const isGoogleConnected = googleStatus?.connected || false;
   const isGoogleLoading = disconnectMutation.isPending;
+
+  const handleDisconnectGoogle = async () => {
+    try {
+      await disconnectMutation.mutateAsync();
+    } catch (error) {
+      console.error("❌ Erreur lors de la déconnexion:", error);
+    }
+  };
 
   // API et Store pour synchroniser les données proExpert
   const { data: proExpertData, isLoading: isLoadingApi } = useGetProExpert();
@@ -91,11 +96,6 @@ export default function Disponibilites() {
     setShowAvailabilitySheet(true);
   };
 
-  const handleSyncCalendars = () => {
-    // Ouvrir le sheet des calendriers synchronisés
-    setShowSyncedCalendarsSheet(true);
-  };
-
   // Ouvrir automatiquement le sheet sur mobile/tablette (< 1024px) quand une date est sélectionnée
   useEffect(() => {
     if (selectedDate && isMobileOrTablet) {
@@ -119,13 +119,6 @@ export default function Disponibilites() {
       <AvailabilitySheet
         isOpen={showAvailabilitySheet}
         onClose={() => setShowAvailabilitySheet(false)}
-      />
-
-      <SyncedCalendarsSheet
-        isOpen={showSyncedCalendarsSheet}
-        onClose={() => setShowSyncedCalendarsSheet(false)}
-        connectedEmail={googleStatus?.email}
-        isConnected={isGoogleConnected}
       />
 
       {/* Sheet pour MOBILE et TABLETTE (< 1024px) - Sur desktop, le panneau est fixe à droite */}
@@ -187,8 +180,10 @@ export default function Disponibilites() {
             <div className="space-y-4 w-[90%] mx-auto pb-6">
               <AvailabilityButtons
                 onManageAvailability={handleManageAvailability}
-                onSyncCalendars={handleSyncCalendars}
                 isGoogleConnected={isGoogleConnected}
+                connectedEmail={googleStatus?.email}
+                onDisconnect={handleDisconnectGoogle}
+                isDisconnecting={disconnectMutation.isPending}
               />
 
               {/* Afficher la card de connexion seulement si Google Calendar n'est pas connecté */}
