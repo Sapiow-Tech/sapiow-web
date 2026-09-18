@@ -142,8 +142,8 @@ export const Header: React.FC<HeaderProps> = ({
             )}
             {!hideProfile && (
               <ProfileAvatar
-                src={user?.avatar || "/assets/memoji.jpg"}
-                alt={t("header.profileAlt")}
+                src={user?.avatar || ""}
+                alt={`${user?.first_name || ""} ${user?.last_name || ""}`.trim()}
                 size="lg"
               />
             )}
