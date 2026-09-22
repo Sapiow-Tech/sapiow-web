@@ -32,44 +32,44 @@ export const DOMAINS: Domain[] = [
     id: "media",
     name: "Média",
     icon: "/images/domains/media.svg",
-    description: "Communication, journalisme, audiovisuel"
+    description: "Communication, journalisme, audiovisuel",
   },
   {
     id: "culture",
     name: "Culture",
     icon: "/images/domains/culture.svg",
-    description: "Arts, littérature, spectacle"
+    description: "Arts, littérature, spectacle",
   },
   {
     id: "business",
     name: "Business",
     icon: "/images/domains/business.svg",
-    description: "Commerce, entrepreneuriat, finance"
+    description: "Commerce, entrepreneuriat, finance",
   },
   {
     id: "maison",
     name: "Maison",
     icon: "/images/domains/maison.svg",
-    description: "Décoration, bricolage, jardinage"
+    description: "Décoration, bricolage, jardinage",
   },
   {
     id: "artisanat",
     name: "Artisanat",
     icon: "/images/domains/artisanat.svg",
-    description: "Création manuelle, savoir-faire traditionnel"
+    description: "Création manuelle, savoir-faire traditionnel",
   },
   {
     id: "glow",
     name: "Glow",
     icon: "/images/domains/glow.svg",
-    description: "Bien-être, beauté, développement personnel"
+    description: "Bien-être, beauté, développement personnel",
   },
   {
     id: "sport",
     name: "Sport",
     icon: "/images/domains/sport.svg",
-    description: "Activité physique, coaching, santé"
-  }
+    description: "Activité physique, coaching, santé",
+  },
 ];
 
 /**
@@ -78,24 +78,24 @@ export const DOMAINS: Domain[] = [
  */
 export const DOMAIN_ICON_MAPPING: Record<string, string> = {
   // Noms exacts de l'API (avec majuscules)
-  "Media": "/assets/icons/podcast.svg",
-  "Culture": "/assets/icons/culture.svg", 
-  "Business": "/assets/icons/business.svg",
-  "Maison": "/assets/icons/home.svg",
-  "Artisanat": "/assets/icons/paintRoller.svg",
-  "Glow": "/assets/icons/meditation.svg",
-  "SelfeCare": "/assets/icons/meditation.svg",
-  "Sport": "/assets/icons/balls.svg",
-  
+  Media: "/assets/icons/podcast.svg",
+  Culture: "/assets/icons/culture.svg",
+  Business: "/assets/icons/business.svg",
+  Maison: "/assets/icons/home.svg",
+  Artisanat: "/assets/icons/paintRoller.svg",
+  Glow: "/assets/icons/meditation.svg",
+  SelfCare: "/assets/icons/meditation.svg",
+  Sport: "/assets/icons/balls.svg",
+
   // Noms en minuscules pour compatibilité
-  "media": "/assets/icons/podcast.svg",
-  "culture": "/assets/icons/culture.svg",
-  "business": "/assets/icons/business.svg", 
-  "maison": "/assets/icons/home.svg",
-  "artisanat": "/assets/icons/paintRoller.svg",
-  "glow": "/assets/icons/meditation.svg",
-  "selfecare": "/assets/icons/meditation.svg",
-  "sport": "/assets/icons/balls.svg",
+  media: "/assets/icons/podcast.svg",
+  culture: "/assets/icons/culture.svg",
+  business: "/assets/icons/business.svg",
+  maison: "/assets/icons/home.svg",
+  artisanat: "/assets/icons/paintRoller.svg",
+  glow: "/assets/icons/meditation.svg",
+  selfcare: "/assets/icons/meditation.svg",
+  sport: "/assets/icons/balls.svg",
 };
 
 /**
@@ -110,7 +110,7 @@ export const getDomainIcon = (domainName: string): string => {
  * Fonction pour obtenir un domaine par son ID
  */
 export const getDomainById = (domainId: string): Domain | undefined => {
-  return DOMAINS.find(d => d.id === domainId);
+  return DOMAINS.find((d) => d.id === domainId);
 };
 
 /**
@@ -127,7 +127,7 @@ export const DOMAIN_SPECIALTIES: Record<string, string[]> = {
     "Animation",
     "Podcast",
     "Streaming",
-    "Marketing digital"
+    "Marketing digital",
   ],
   culture: [
     "Littérature",
@@ -139,7 +139,7 @@ export const DOMAIN_SPECIALTIES: Record<string, string[]> = {
     "Histoire de l'art",
     "Critique culturelle",
     "Médiation culturelle",
-    "Patrimoine"
+    "Patrimoine",
   ],
   business: [
     "Entrepreneuriat",
@@ -151,7 +151,7 @@ export const DOMAIN_SPECIALTIES: Record<string, string[]> = {
     "Comptabilité",
     "Ressources humaines",
     "Consulting",
-    "E-commerce"
+    "E-commerce",
   ],
   maison: [
     "Décoration intérieure",
@@ -163,7 +163,7 @@ export const DOMAIN_SPECIALTIES: Record<string, string[]> = {
     "Design d'espace",
     "Menuiserie",
     "Plomberie",
-    "Électricité"
+    "Électricité",
   ],
   artisanat: [
     "Poterie",
@@ -175,7 +175,7 @@ export const DOMAIN_SPECIALTIES: Record<string, string[]> = {
     "Maroquinerie",
     "Céramique",
     "Tissage",
-    "Gravure"
+    "Gravure",
   ],
   glow: [
     "Coaching de vie",
@@ -187,7 +187,7 @@ export const DOMAIN_SPECIALTIES: Record<string, string[]> = {
     "Développement personnel",
     "Sophrologie",
     "Aromathérapie",
-    "Relaxation"
+    "Relaxation",
   ],
   sport: [
     "Fitness",
@@ -199,8 +199,8 @@ export const DOMAIN_SPECIALTIES: Record<string, string[]> = {
     "Basketball",
     "Yoga",
     "Pilates",
-    "Arts martiaux"
-  ]
+    "Arts martiaux",
+  ],
 };
 
 /**
