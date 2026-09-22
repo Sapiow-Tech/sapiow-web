@@ -24,22 +24,24 @@ export default function CategorySection({
 }: CategorySectionProps) {
   const t = useTranslations();
 
-  // Fonction pour obtenir le nom traduit de la catégorie
-  const getCategoryDisplayName = (categoryKey: string) => {
-    const categoryTranslations: Record<string, string> = {
-      maison: t("categories.maison"),
-      business: t("categories.business"),
-      media: t("categories.media"),
-      culture: t("categories.culture"),
-      glow: t("categories.glow"),
-      sport: t("categories.sport"),
-      artisanat: t("categories.artisanat"),
-    };
+  // Affiche le nom API ; utilise une traduction i18n si une clé connue existe
+  const getCategoryDisplayName = (domainName: string) => {
+    const translationKey = domainName.trim().toLowerCase();
+    const knownKeys = [
+      "maison",
+      "business",
+      "media",
+      "culture",
+      "glow",
+      "sport",
+      "artisanat",
+    ];
 
-    return (
-      categoryTranslations[categoryKey] ||
-      categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1)
-    );
+    if (knownKeys.includes(translationKey)) {
+      return t(`categories.${translationKey}`);
+    }
+
+    return domainName;
   };
   if (professionals.length === 0) {
     return null;
