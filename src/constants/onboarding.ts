@@ -84,6 +84,7 @@ export const DOMAIN_ICON_MAPPING: Record<string, string> = {
   "Maison": "/assets/icons/home.svg",
   "Artisanat": "/assets/icons/paintRoller.svg",
   "Glow": "/assets/icons/meditation.svg",
+  "SelfeCare": "/assets/icons/meditation.svg",
   "Sport": "/assets/icons/balls.svg",
   
   // Noms en minuscules pour compatibilité
@@ -93,6 +94,7 @@ export const DOMAIN_ICON_MAPPING: Record<string, string> = {
   "maison": "/assets/icons/home.svg",
   "artisanat": "/assets/icons/paintRoller.svg",
   "glow": "/assets/icons/meditation.svg",
+  "selfecare": "/assets/icons/meditation.svg",
   "sport": "/assets/icons/balls.svg",
 };
 
