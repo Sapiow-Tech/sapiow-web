@@ -8,15 +8,7 @@ import { useFavoritesLogic } from "./useFavoritesLogic";
 
 // Mapping function to convert Expert to Professional format
 const mapExpertToProfessional = (expert: Expert): Professional => {
-  const categoryMap: Record<string, string> = {
-    Media: "media",
-    Culture: "culture",
-    Business: "business",
-    Maison: "maison",
-    Artisanat: "artisanat",
-    Glow: "glow",
-    Sport: "sport",
-  };
+  const domainName = expert.domains?.name || "unknown";
 
   // Format avatar URL properly for Next.js Image
   const formatImageUrl = (avatarPath: string | null | undefined) => {
@@ -42,12 +34,12 @@ const mapExpertToProfessional = (expert: Expert): Professional => {
     image: formatImageUrl(expert.avatar),
     avatar: expert.avatar,
     verified: true,
-    category: categoryMap[expert.domains.name] || "business",
-    domain: expert.domains.name,
+    category: domainName,
+    domain: domainName,
     topExpertise: expert.badge === "gold",
     description:
       expert.description ||
-      `${expert.job || "Expert"} spécialisé en ${expert.domains.name}`,
+      `${expert.job || "Expert"} spécialisé en ${domainName}`,
     linkedin: expert.linkedin,
     job: expert.job,
     sessions: expert.sessions,
@@ -142,14 +134,14 @@ export const useClientHome = () => {
   };
 
   /**
-   * Grouper les professionnels par catégorie pour l'affichage "Top"
-   * Chaque catégorie devient une section horizontale
+   * Grouper les professionnels par nom de domaine API pour l'affichage "Top"
+   * Chaque domaine devient une section ; un nouveau domaine apparaît automatiquement
    * Seuls les professionnels avec badge "gold" (topExpertise === true) sont inclus
    */
   const groupedProfessionals = allProfessionals
     .filter((prof: Professional) => prof.topExpertise === true)
     .reduce((acc: Record<string, Professional[]>, prof: Professional) => {
-      const category = prof.category || "business";
+      const category = prof.category || prof.domain || "unknown";
       if (!acc[category]) {
         acc[category] = [];
       }
@@ -159,16 +151,11 @@ export const useClientHome = () => {
 
   /**
    * Filtrer les professionnels selon la catégorie et sous-catégorie sélectionnées
-   * Pour "top" : tous les professionnels ou filtre par sous-catégorie statique
+   * Pour "top" : tous les gold renvoyés par l'API
    * Pour domaines : filtre par domain_id et potentiellement par expertise_id
    */
   const filteredProfessionals = useMemo(() => {
     if (selectedCategory === "top") {
-      // Logique existante pour "top" avec sous-catégories statiques
-      if (!selectedSubCategory || selectedSubCategory === "tout") {
-        return allProfessionals;
-      }
-      // Filtrage par sous-catégorie statique (à implémenter selon besoins)
       return allProfessionals;
     }
 
