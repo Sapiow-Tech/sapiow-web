@@ -103,7 +103,9 @@ export const DOMAIN_ICON_MAPPING: Record<string, string> = {
  * Utilise le mapping des icônes de CategoryFilter pour la cohérence
  */
 export const getDomainIcon = (domainName: string): string => {
-  return DOMAIN_ICON_MAPPING[domainName] || "/assets/icons/star.svg"; // Icône par défaut
+  if (!domainName) return "/assets/icons/star.svg";
+  const key = domainName.trim().toLowerCase().replace(/[\s\-_]/g, "");
+  return DOMAIN_ICON_MAPPING[key] || "/assets/icons/star.svg";
 };
 
 /**
