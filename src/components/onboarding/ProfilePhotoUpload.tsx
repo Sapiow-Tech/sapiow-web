@@ -93,7 +93,13 @@ export const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
         {hasPhoto && isCompte && onPhotoDelete && (
           <button
             type="button"
-            onClick={onPhotoDelete}
+            onClick={() => {
+              if (selectedImage) {
+                URL.revokeObjectURL(selectedImage);
+              }
+              setSelectedImage(null);
+              onPhotoDelete();
+            }}
             className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 disabled:opacity-50 z-10 shadow-lg"
             title={t("profile.deletePhoto")}
             disabled={isUploading}
