@@ -270,10 +270,15 @@ export const useExpertProfileUpdate = ({
 
       console.log("📤 Expertises envoyées:", expertisesFormatted);
 
-      // Filtrer les champs vides pour ne pas les envoyer (sauf email qui doit toujours être envoyé)
+      // Filtrer les champs vides pour ne pas les envoyer.
+      // Garder email toujours, et linkedin/website même vides pour pouvoir les effacer en base.
+      const fieldsAllowedEmpty = new Set(["email", "linkedin", "website"]);
       Object.keys(updateData).forEach((key) => {
         const value = updateData[key as keyof UpdateProExpertData];
-        if ((value === "" || value === undefined) && key !== "email") {
+        if (
+          (value === "" || value === undefined) &&
+          !fieldsAllowedEmpty.has(key)
+        ) {
           delete updateData[key as keyof UpdateProExpertData];
         }
       });
