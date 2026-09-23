@@ -147,10 +147,9 @@ export const transformUpdateDataToFormData = (
   if (data.description !== undefined)
     formData.append("description", data.description);
   if (data.job !== undefined) formData.append("job", data.job);
-  // Toujours inclure linkedin dans le payload, même s'il est vide
-  formData.append("linkedin", data.linkedin ?? "");
-  // Toujours inclure website dans le payload, même s'il est vide
-  formData.append("website", data.website ?? "");
+  // Only include when explicitly provided (including empty string to clear)
+  if (data.linkedin !== undefined) formData.append("linkedin", data.linkedin);
+  if (data.website !== undefined) formData.append("website", data.website);
   if (data.language !== undefined) formData.append("language", data.language);
   if (data.availability_start_date !== undefined)
     formData.append("availability_start_date", data.availability_start_date);
