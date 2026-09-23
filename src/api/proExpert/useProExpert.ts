@@ -168,12 +168,8 @@ export const transformUpdateDataToFormData = (
       );
       formData.append("avatar", data.avatar);
     } else if (data.avatar === null) {
-      // Envoyer un blob vide + flag de suppression pour supprimer l'avatar
-      console.log(
-        "🗑️ Suppression avatar: ajout d'un blob vide + flag de suppression au FormData"
-      );
-      const emptyBlob = new Blob([], { type: "image/jpeg" });
-      formData.append("avatar", emptyBlob, "delete.jpg");
+      // Flag only — backend clears avatar without uploading a placeholder file
+      console.log("🗑️ Suppression avatar: remove_avatar=true");
       formData.append("remove_avatar", "true");
     }
   }
