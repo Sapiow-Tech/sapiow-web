@@ -60,7 +60,9 @@ export function getApiErrorMessage(
  * Endpoints accessibles sans authentification (pas de token requis).
  * Important: l'accès public dépend aussi des règles côté backend.
  */
-const isPublicEndpoint = (endpoint: string) => {
+const isPublicEndpoint = (endpoint: string, method = "GET") => {
+  const httpMethod = method.toUpperCase();
+
   // `search` (avec ou sans querystring) doit être public pour afficher la liste des pros sans login
   if (endpoint === "search" || endpoint.startsWith("search?")) return true;
   // Catégories (domaines) + sous-catégories (expertises) utilisées sur la home
@@ -69,6 +71,14 @@ const isPublicEndpoint = (endpoint: string) => {
   // Fiche pro: autoriser `pro/{id}` en public (mais pas `pro` seul)
   if (endpoint.startsWith("pro/") && endpoint.length > "pro/".length)
     return true;
+  // Créneaux occupés pour le calendrier de réservation (GET public limité côté backend)
+  if (
+    httpMethod === "GET" &&
+    endpoint.startsWith("pro-appointment/") &&
+    endpoint.length > "pro-appointment/".length
+  ) {
+    return true;
+  }
   if (endpoint === "sponso" || endpoint.startsWith("sponso/")) return true;
   return false;
 };
@@ -162,7 +172,8 @@ export const fetchApi = async <T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> => {
-  const publicEndpoint = isPublicEndpoint(endpoint);
+  const method = (options.method || "GET").toString().toUpperCase();
+  const publicEndpoint = isPublicEndpoint(endpoint, method);
 
   // Vérifier et rafraîchir le token si nécessaire avant la requête
   // Sauf pour les endpoints publics (ex: `search`)
