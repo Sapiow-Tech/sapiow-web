@@ -40,6 +40,9 @@ export const useOnboardingSeeker = () => {
   // État d'erreur local
   const [error, setError] = useState<string | null>(null);
 
+  const resolveNextPath = () =>
+    sanitizeInternalNextPath(searchParams.get("next")) || getAuthNextPath();
+
   // Validation des formulaires
   const isFormValid =
     firstName.trim() !== "" && lastName.trim() !== "" && email.trim() !== "";
@@ -89,19 +92,14 @@ export const useOnboardingSeeker = () => {
       // Appel API
       submitOnboarding(onboardingData, {
         onSuccess: () => {
-          // Redirection sera gérée par le composant parent
-          const nextPath =
-            sanitizeInternalNextPath(searchParams.get("next")) ||
-            getAuthNextPath();
+          setUser({ type: "client" });
+          const nextPath = resolveNextPath();
           if (nextPath) {
             clearAuthNextPath();
             router.push(nextPath);
           } else {
             router.push("/");
           }
-          setUser({
-            type: "client",
-          });
         },
         onError: (error: any) => {
           setError(

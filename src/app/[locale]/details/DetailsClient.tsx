@@ -721,10 +721,10 @@ function ProfessionalDetailContent() {
       {/* Page de succès en pleine page pour mobile et tablette */}
       {isMobileOrTablet && isPaid && (
         <div className="fixed inset-0 bg-white z-50 flex flex-col">
-          <HeaderClient isBack />
+          <HeaderClient isBack classNameIsBack="py-0" />
           <div className="flex-1 overflow-y-auto">
-            <div className="min-h-full flex flex-col items-center justify-center px-6 py-8">
-              <div className="relative w-full flex flex-col items-center justify-center mb-8">
+            <div className="min-h-full flex flex-col items-center justify-start px-6 pt-4 pb-8">
+              <div className="relative w-full flex flex-col items-center justify-center mb-4">
                 {/* Confetti overlay */}
                 <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
                   <Lottie

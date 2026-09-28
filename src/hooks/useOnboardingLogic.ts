@@ -4,6 +4,7 @@ import { useUserStore } from "@/store/useUser";
 import {
   clearAuthNextPath,
   getAuthNextPath,
+  isBookingResumeNext,
   sanitizeInternalNextPath,
   setAuthNextPath,
 } from "@/utils/authFlow";
@@ -85,21 +86,48 @@ export function useOnboardingLogic(): UseOnboardingLogicReturn {
         return;
       }
 
-      // Si au moins un profil existe, rediriger vers home (premier chargement uniquement)
+      // Expert sans profil client + booking : créer le customer avant de reprendre le RDV
+      const isBookingFlow = isBookingResumeNext(authNextPath);
+      if (isBookingFlow && isCustomerEmpty) {
+        setStep(1);
+        setUserType("client");
+        setUser({ type: "client" });
+        onboardingStartedRef.current = true;
+        setIsCheckingProfiles(false);
+        setShouldShowOnboarding(true);
+        return;
+      }
+
+      // Si au moins un profil existe, rediriger (ne pas rejouer l'effet)
       if (!isProEmpty || !isCustomerEmpty) {
-        if (!isCustomerEmpty && isProEmpty) {
+        onboardingStartedRef.current = true;
+
+        if (isBookingFlow || (!isCustomerEmpty && isProEmpty)) {
+          // Booking ou client seul : rester en mode client
           setUser({ type: "client" });
         } else if (isCustomerEmpty && !isProEmpty) {
           setUser({ type: "expert" });
         } else {
           setUser({ type: "expert" });
         }
+
         if (authNextPath) {
           clearAuthNextPath();
           router.push(authNextPath);
         } else {
           router.push("/");
         }
+        return;
+      }
+
+      // Booker sans aucun profil : skip le choix client/expert, onboarding client direct
+      if (isBookingFlow) {
+        setStep(1);
+        setUserType("client");
+        setUser({ type: "client" });
+        onboardingStartedRef.current = true;
+        setIsCheckingProfiles(false);
+        setShouldShowOnboarding(true);
         return;
       }
 

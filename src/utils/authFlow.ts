@@ -30,3 +30,8 @@ export const clearAuthNextPath = () => {
   localStorage.removeItem(AUTH_NEXT_STORAGE_KEY);
 };
 
+export const isBookingResumeNext = (path: string | null | undefined) => {
+  const sanitized = sanitizeInternalNextPath(path);
+  return sanitized === "/booking/resume";
+};
+
