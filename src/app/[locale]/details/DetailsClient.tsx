@@ -121,11 +121,17 @@ function ProfessionalDetailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isPaid } = usePayStore();
-  const { isPlaning } = usePlaningStore();
+  const { isPlaning, setIsPlaning } = usePlaningStore();
   const queryClient = useQueryClient();
 
   // Récupérer l'ID depuis les paramètres de recherche
   const expertId = searchParams.get("id");
+
+  // Remettre le planning à zéro à chaque fiche pro (et à la sortie)
+  useEffect(() => {
+    setIsPlaning(false);
+    return () => setIsPlaning(false);
+  }, [expertId, setIsPlaning]);
 
   // Utiliser le hook API pour récupérer l'expert
   const {
