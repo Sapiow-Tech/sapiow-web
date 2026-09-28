@@ -36,8 +36,10 @@ import { SponsoredBanner } from "@/components/sponso/SponsoredBanner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useIsMobileOrTablet } from "@/hooks/use-mobile-tablet";
 import { useDetailsLogic } from "@/hooks/useDetailsLogic";
+import { apiClient } from "@/lib/api-client";
 import { useUserStore } from "@/store/useUser";
 import { authUtils } from "@/utils/auth";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 
 // Type definitions based on actual API response
@@ -120,6 +122,7 @@ function ProfessionalDetailContent() {
   const searchParams = useSearchParams();
   const { isPaid } = usePayStore();
   const { isPlaning } = usePlaningStore();
+  const queryClient = useQueryClient();
 
   // Récupérer l'ID depuis les paramètres de recherche
   const expertId = searchParams.get("id");
@@ -130,6 +133,44 @@ function ProfessionalDetailContent() {
     isLoading,
     error,
   } = useGetProExpertById(expertId || "");
+
+  // Prefetch des créneaux après le premier paint (même cache que VisioPlanningCalendar)
+  useEffect(() => {
+    if (!expertId) return;
+
+    let cancelled = false;
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    const prefetch = () => {
+      if (cancelled) return;
+      void queryClient.prefetchQuery({
+        // params omis = undefined, identique à useGetProAppointments(proId)
+        queryKey: ["appointments", expertId, undefined],
+        queryFn: () => apiClient.get(`pro-appointment/${expertId}`),
+      });
+    };
+
+    const schedulePrefetch = () => {
+      if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+        idleId = window.requestIdleCallback(prefetch, { timeout: 2000 });
+      } else {
+        timeoutId = setTimeout(prefetch, 0);
+      }
+    };
+
+    // Laisser le premier paint de la fiche passer avant de lancer la requête
+    const rafId = requestAnimationFrame(schedulePrefetch);
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(rafId);
+      if (idleId !== undefined && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    };
+  }, [expertId, queryClient]);
 
   const { data: myProProfile } = useGetProExpert(isAuthenticated);
 
