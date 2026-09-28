@@ -143,10 +143,6 @@ export default {
       "We need some information to personalize your experience.",
     preferredDomain: "Your preferred domain?",
     highlightExperts: "We will highlight the experts that interest you most.",
-    congratulationsTitle: "Congratulations!",
-    congratulationsMessage:
-      "Your account is ready. You can now complete your booking.",
-    continueBooking: "Continue my booking",
     // Expert specific
     createExpertAccount:
       "We need some information to create your Expert account.",
