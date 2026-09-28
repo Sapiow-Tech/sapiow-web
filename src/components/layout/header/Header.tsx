@@ -297,10 +297,10 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={toggleMobileMenu}
         >
           <div
-            className="fixed left-0 top-0 h-full w-80 bg-white shadow-lg z-50"
+            className="fixed left-0 top-0 h-dvh max-h-dvh w-80 bg-white shadow-lg z-50 flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-4 border-b border-light-blue-gray">
+            <div className="flex items-center justify-between p-4 border-b border-light-blue-gray shrink-0">
               <h2 className="text-lg font-bold text-cobalt-blue-500">Menu</h2>
               <button
                 onClick={toggleMobileMenu}
@@ -323,7 +323,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </svg>
               </button>
             </div>
-            <div className="p-4">
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4">
               <AccountSidebar isMobile={true} />
             </div>
           </div>

@@ -105,7 +105,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
 
   const handleMarkAsRead = async (
     notificationId: string,
-    notification: any
+    notification: any,
   ) => {
     try {
       await markNotificationAsRead(notificationId);
@@ -119,7 +119,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
     const date = new Date(dateString);
     const now = new Date();
     const diffInMinutes = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60)
+      (now.getTime() - date.getTime()) / (1000 * 60),
     );
 
     if (diffInMinutes < 1) return t("header.justNow");
@@ -127,7 +127,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
       return `${t("header.minutesAgo")} ${diffInMinutes}${t("header.minutes")}`;
     if (diffInMinutes < 1440)
       return `${t("header.hoursAgo")} ${Math.floor(diffInMinutes / 60)}${t(
-        "header.hours"
+        "header.hours",
       )}`;
 
     return date.toLocaleDateString(undefined, {
@@ -138,7 +138,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
 
   return (
     <>
-      <header className="w-full pt-9 lg:border-b-2 lg:border-snow-blue py-2 sticky top-0 z-20 bg-white">
+      <header className="w-full lg:border-b-2 lg:border-snow-blue py-4 sticky top-0 z-20 bg-white">
         <div className="flex items-center justify-between px-4">
           {/* Section gauche - Photo de profil et message */}
           <div className="w-full max-w-[320px] flex flex-col items-start gap-4">
@@ -367,10 +367,10 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
           onClick={toggleMobileMenu}
         >
           <div
-            className="fixed left-0 top-0 h-full w-80 bg-white shadow-lg z-50"
+            className="fixed left-0 top-0 h-dvh max-h-dvh w-80 bg-white shadow-lg z-50 flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-4 border-b border-light-blue-gray">
+            <div className="flex items-center justify-between p-4 border-b border-light-blue-gray shrink-0">
               <h2 className="text-lg font-bold text-cobalt-blue-500">Menu</h2>
               <button
                 onClick={toggleMobileMenu}
@@ -393,7 +393,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
                 </svg>
               </button>
             </div>
-            <div className="p-4">
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4">
               <AccountSidebar isMobile={true} />
             </div>
           </div>

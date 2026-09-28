@@ -89,7 +89,7 @@ export function AccountSidebar({ isMobile = false }: AccountSidebarProps) {
   const navItems = getNavItems(t);
 
   const sidebarClasses = isMobile
-    ? "w-full h-full flex flex-col px-4 py-4"
+    ? "w-full flex flex-col px-4 py-4"
     : " w-[302px] h-[calc(100vh-105px)] sticky top-[102px] z-30 flex flex-col px-4 py-4 border-r border-r-light-blue-gray bg-white";
 
   const handleLogout = async () => {
@@ -156,7 +156,7 @@ export function AccountSidebar({ isMobile = false }: AccountSidebarProps) {
   return (
     <aside className={`${sidebarClasses}`}>
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto z-50 -mt-4">
+      <nav className={`${isMobile ? "" : "flex-1 overflow-y-auto"} z-50 -mt-4`}>
         <ul className="space-y-0">
           {user.type === "expert" && <ShareLinkButton className="mb-5 mt-5" />}
 
