@@ -147,6 +147,10 @@ export default {
     preferredDomain: "Votre domaine préféré ?",
     highlightExperts:
       "Nous allons mettre en avant les experts qui vous intéressent le plus.",
+    congratulationsTitle: "Félicitations !",
+    congratulationsMessage:
+      "Votre compte est prêt. Vous pouvez maintenant finaliser votre réservation.",
+    continueBooking: "Continuer ma réservation",
     // Expert specific
     createExpertAccount:
       "Nous avons besoin de quelques informations pour personnaliser créer votre compte Expert.",

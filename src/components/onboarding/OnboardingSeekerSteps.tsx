@@ -1,7 +1,9 @@
 "use client";
+import confettiAnimation from "@/assets/confetti.json";
 import { Button } from "@/components/common/Button";
 import { FormField } from "@/components/common/FormField";
 import { useOnboardingSeeker } from "@/hooks/useOnboardingSeeker";
+import Lottie from "lottie-react";
 import { useTranslations } from "next-intl";
 import React from "react";
 import { DomainSelector } from "./DomainSelector";
@@ -27,6 +29,7 @@ export const OnboardingSeekerSteps: React.FC = () => {
     nextStep,
     handleDomainSelect,
     completeOnboarding,
+    finishOnboarding,
   } = useOnboardingSeeker();
 
   return (
@@ -114,6 +117,33 @@ export const OnboardingSeekerSteps: React.FC = () => {
             className="w-full rounded-[8px] h-[56px] text-base font-medium"
             disabled={!isDomainValid || isSubmitting}
             onClick={completeOnboarding}
+          />
+        </div>
+      )}
+
+      {/* Étape 3 : Félicitations (bookers uniquement) */}
+      {step === 3 && (
+        <div className="relative flex flex-col items-center text-center">
+          <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+            <Lottie
+              animationData={confettiAnimation}
+              loop={true}
+              autoplay={true}
+              style={{ width: 350, height: 300 }}
+            />
+          </div>
+          <div className="z-0 mt-10 mb-8">
+            <h1 className="text-2xl sm:text-[26px] lg:text-[28px] font-bold text-charcoal-blue mb-4">
+              {t("onboarding.congratulationsTitle")}
+            </h1>
+            <p className="text-base text-ash-gray font-normal">
+              {t("onboarding.congratulationsMessage")}
+            </p>
+          </div>
+          <Button
+            label={t("onboarding.continueBooking")}
+            className="w-full rounded-[8px] h-[56px] text-base font-medium z-20"
+            onClick={finishOnboarding}
           />
         </div>
       )}

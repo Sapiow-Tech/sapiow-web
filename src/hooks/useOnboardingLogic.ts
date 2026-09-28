@@ -4,6 +4,7 @@ import { useUserStore } from "@/store/useUser";
 import {
   clearAuthNextPath,
   getAuthNextPath,
+  isBookingResumeNext,
   sanitizeInternalNextPath,
   setAuthNextPath,
 } from "@/utils/authFlow";
@@ -100,6 +101,17 @@ export function useOnboardingLogic(): UseOnboardingLogicReturn {
         } else {
           router.push("/");
         }
+        return;
+      }
+
+      // Booker sans compte : skip le choix client/expert, onboarding client direct
+      if (isBookingResumeNext(authNextPath)) {
+        setStep(1);
+        setUserType("client");
+        setUser({ type: "client" });
+        onboardingStartedRef.current = true;
+        setIsCheckingProfiles(false);
+        setShouldShowOnboarding(true);
         return;
       }
 

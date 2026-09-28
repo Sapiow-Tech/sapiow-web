@@ -5,6 +5,7 @@ import { useUserStore } from "@/store/useUser";
 import {
   clearAuthNextPath,
   getAuthNextPath,
+  isBookingResumeNext,
   sanitizeInternalNextPath,
 } from "@/utils/authFlow";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -40,6 +41,9 @@ export const useOnboardingSeeker = () => {
   // État d'erreur local
   const [error, setError] = useState<string | null>(null);
 
+  const resolveNextPath = () =>
+    sanitizeInternalNextPath(searchParams.get("next")) || getAuthNextPath();
+
   // Validation des formulaires
   const isFormValid =
     firstName.trim() !== "" && lastName.trim() !== "" && email.trim() !== "";
@@ -67,6 +71,17 @@ export const useOnboardingSeeker = () => {
     setError(null);
   };
 
+  const finishOnboarding = () => {
+    const nextPath = resolveNextPath();
+    setUser({ type: "client" });
+    if (nextPath) {
+      clearAuthNextPath();
+      router.push(nextPath);
+    } else {
+      router.push("/");
+    }
+  };
+
   // Fonction pour finaliser l'onboarding
   const completeOnboarding = async () => {
     if (!isDomainValid) {
@@ -89,19 +104,14 @@ export const useOnboardingSeeker = () => {
       // Appel API
       submitOnboarding(onboardingData, {
         onSuccess: () => {
-          // Redirection sera gérée par le composant parent
-          const nextPath =
-            sanitizeInternalNextPath(searchParams.get("next")) ||
-            getAuthNextPath();
-          if (nextPath) {
-            clearAuthNextPath();
-            router.push(nextPath);
-          } else {
-            router.push("/");
+          setUser({ type: "client" });
+
+          if (isBookingResumeNext(resolveNextPath())) {
+            setStep(3);
+            return;
           }
-          setUser({
-            type: "client",
-          });
+
+          finishOnboarding();
         },
         onError: (error: any) => {
           setError(
@@ -139,5 +149,6 @@ export const useOnboardingSeeker = () => {
     nextStep,
     handleDomainSelect,
     completeOnboarding,
+    finishOnboarding,
   };
 };
