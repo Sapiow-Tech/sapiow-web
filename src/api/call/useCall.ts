@@ -8,21 +8,26 @@ export interface StreamUser {
   name: string;
 }
 
-export interface ProStreamUserResponse {
-  proStreamUser: {
-    user: StreamUser;
-    token: string;
-    appointmentId: string;
-  };
+export interface StreamCallUserPayload {
+  user: StreamUser;
+  token: string;
+  appointmentId: string;
 }
 
-// Get the stream call for the given appointmentId 2
+export interface ProStreamUserResponse {
+  proStreamUser?: StreamCallUserPayload;
+  patientStreamUser?: StreamCallUserPayload;
+}
+
+// Get the stream call for the given appointmentId
 export const useGetStreamCall = (appointmentId: string | undefined) => {
   return useQuery({
     queryKey: ["call", appointmentId],
     queryFn: (): Promise<ProStreamUserResponse> =>
       apiClient.get(`call/${appointmentId}`),
-    enabled: !!appointmentId, // Only run query when appointmentId is available
+    enabled: !!appointmentId,
+    // Un brief offline browser event must not re-fetch and rewrite the token mid-call
+    refetchOnReconnect: false,
   });
 };
 

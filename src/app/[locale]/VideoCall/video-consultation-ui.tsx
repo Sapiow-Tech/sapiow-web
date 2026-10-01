@@ -6,12 +6,13 @@ import {
   ParticipantView,
   StreamCall,
   StreamVideo,
+  useCall,
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
-import { MicOff, Users, VideoOff } from "lucide-react";
+import { MicOff, Users, VideoOff, WifiOff } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CallEndedScreen, ErrorScreen, LoadingScreen } from "./components";
 import { useVideoCallSimple } from "./hooks";
 
@@ -22,24 +23,14 @@ interface VideoConsultationUIProps {
 export default function VideoConsultationUI({
   onClose,
 }: VideoConsultationUIProps) {
-  const { appointmentId } = useCallStore();
+  const { appointmentId, setCallData } = useCallStore();
+  const hasSetCallDataRef = useRef(false);
 
-  console.log(
-    "🎬 VideoConsultationUI - appointmentId from store:",
-    appointmentId
-  );
-  console.log(
-    "🎬 VideoConsultationUI - appointmentId type:",
-    typeof appointmentId
-  );
-
-  // Récupérer les données Stream depuis l'API
   const {
     data: streamData,
     isLoading: isLoadingStreamData,
     error: streamError,
   } = useGetStreamCall(appointmentId || undefined);
-  console.log({ appointmentId });
 
   const {
     client,
@@ -51,31 +42,23 @@ export default function VideoConsultationUI({
     handleRetry,
   } = useVideoCallSimple();
 
-  console.log("🎬 useVideoCallSimple states:");
-  console.log("- client:", client);
-  console.log("- call:", call);
-  console.log("- error:", error);
-  console.log("- isConnecting:", isConnecting);
-  console.log("- isEndingCall:", isEndingCall);
-
-  // Gérer les données de l'API et les stocker
+  // Reset first-load guard when switching appointment
   useEffect(() => {
-    console.log("📡 Données API récupérées - Mise à jour du store");
+    hasSetCallDataRef.current = false;
+  }, [appointmentId]);
+
+  // Only write call data on first successful load so a refetch cannot rewrite the token mid-call
+  useEffect(() => {
+    if (hasSetCallDataRef.current) return;
+
     if (
       streamData &&
-      ((streamData as any)?.proStreamUser ||
-        (streamData as any)?.patientStreamUser)
+      (streamData.proStreamUser || streamData.patientStreamUser)
     ) {
-      console.log(
-        "📡 Données API récupérées - Mise à jour du store avec:",
-        streamData
-      );
-      const { useCallStore } = require("@/store/useCall");
-      const { setCallData } = useCallStore.getState();
       setCallData(streamData as any);
-      console.log("✅ Store mis à jour avec:", streamData);
+      hasSetCallDataRef.current = true;
     }
-  }, [streamData]);
+  }, [streamData, setCallData]);
 
   if (error) {
     return (
@@ -87,9 +70,8 @@ export default function VideoConsultationUI({
     );
   }
 
-  // Gestion des erreurs API
   if (streamError) {
-    console.error("❌ Erreur API Stream:", streamError);
+    console.error("Erreur API Stream:", streamError);
   }
 
   if (isLoadingStreamData && appointmentId) {
@@ -134,6 +116,7 @@ export const CustomVideoCallLayout = ({
   isEndingCall,
   onClose,
 }: CustomVideoCallLayoutProps) => {
+  const call = useCall();
   const {
     useParticipants,
     useCallCallingState,
@@ -149,7 +132,7 @@ export const CustomVideoCallLayout = ({
   const { camera, isMute: isCameraOff } = useCameraState();
 
   const [currentTime, setCurrentTime] = useState(Date.now());
-  const [showControls, setShowControls] = useState(true);
+  const [isRejoining, setIsRejoining] = useState(false);
 
   const duration = useMemo(() => {
     if (!session?.live_started_at) return 0;
@@ -190,17 +173,29 @@ export const CustomVideoCallLayout = ({
 
   const handleEndCall = useCallback(async () => {
     await onEndCall();
-    // Fermer le Sheet après avoir terminé l'appel
     onClose?.();
   }, [onEndCall, onClose]);
 
-  const handleCloseModal = useCallback(() => {
-    // Optionnel : terminer l'appel avant de fermer
-    // onEndCall();
-    onClose?.();
-  }, [onClose]);
+  const handleRejoin = useCallback(async () => {
+    if (!call || isRejoining) return;
+    try {
+      setIsRejoining(true);
+      await call.join({ create: true });
+    } catch (err) {
+      console.error("Erreur lors de la reconnexion:", err);
+    } finally {
+      setIsRejoining(false);
+    }
+  }, [call, isRejoining]);
 
-  // Gestion des états de connexion
+  const isReconnecting =
+    callingState === CallingState.RECONNECTING ||
+    callingState === CallingState.MIGRATING ||
+    callingState === CallingState.OFFLINE;
+
+  const isReconnectFailed =
+    callingState === CallingState.RECONNECTING_FAILED;
+
   if (callingState === CallingState.JOINING) {
     return (
       <LoadingScreen
@@ -219,12 +214,8 @@ export const CustomVideoCallLayout = ({
     );
   }
 
-  // Layout principal : vidéo plein écran avec PiP et contrôles
   return (
     <div className="relative w-full h-full bg-black overflow-hidden rounded-[12px] border border-white mt-[10px] mb-[50px]">
-      {/* Titre en haut à gauche */}
-
-      {/* Vidéo principale (participante distante) */}
       {remoteParticipant ? (
         <div className="absolute inset-0 w-full h-full">
           <ParticipantView
@@ -246,7 +237,6 @@ export const CustomVideoCallLayout = ({
         </div>
       )}
 
-      {/* Petite vidéo PiP en haut à droite (participant local) */}
       {localParticipant && (
         <div className="absolute top-16 right-6 w-32 h-40 rounded-xl overflow-hidden border-2 border-white/30 shadow-2xl z-10">
           <ParticipantView
@@ -256,17 +246,44 @@ export const CustomVideoCallLayout = ({
         </div>
       )}
 
-      {/* Timer au centre-bas */}
+      {isReconnecting && (
+        <div className="absolute top-4 left-1/2 z-20 -translate-x-1/2 rounded-full bg-amber-500/90 px-4 py-2 text-sm font-medium text-white shadow-lg">
+          Reconnexion...
+        </div>
+      )}
+
+      {isReconnectFailed && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/70 px-6">
+          <div className="max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+              <WifiOff className="h-6 w-6 text-red-500" />
+            </div>
+            <h3 className="mb-2 text-lg font-semibold text-exford-blue">
+              Connexion perdue
+            </h3>
+            <p className="mb-4 text-sm text-gray-600">
+              Impossible de rétablir la connexion. Vérifiez votre réseau puis
+              réessayez.
+            </p>
+            <button
+              onClick={handleRejoin}
+              disabled={isRejoining}
+              className="w-full rounded-xl bg-cobalt-blue px-4 py-3 text-sm font-medium text-white transition-opacity disabled:opacity-50"
+            >
+              {isRejoining ? "Reconnexion..." : "Rejoindre l'appel"}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="absolute bottom-22 left-1/2 transform -translate-x-1/2 z-10">
         <div className=" rounded-full px-4 py-2 text-white font-mono text-lg">
           {formatDuration(duration)}
         </div>
       </div>
 
-      {/* Boutons de contrôle au centre-bas */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
         <div className="flex items-center gap-4">
-          {/* Bouton microphone */}
           <button
             onClick={handleToggleMicrophone}
             className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
@@ -287,7 +304,6 @@ export const CustomVideoCallLayout = ({
             )}
           </button>
 
-          {/* Bouton raccrocher */}
           <button
             onClick={handleEndCall}
             disabled={isEndingCall}
@@ -301,7 +317,6 @@ export const CustomVideoCallLayout = ({
             />
           </button>
 
-          {/* Bouton caméra */}
           <button
             onClick={handleToggleCamera}
             className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
