@@ -1,9 +1,10 @@
 "use client";
 
 import {
-    useGetProExpert,
-    useUpdateProExpert,
+  useGetProExpert,
+  useUpdateProExpert,
 } from "@/api/proExpert/useProExpert";
+import { Button } from "@/components/common/Button";
 import { Switch } from "@/components/ui/switch";
 import { useProSessionsConfig } from "@/hooks/useProSessionsConfig";
 import { Check, Pencil, Plus, X } from "lucide-react";
@@ -30,11 +31,11 @@ export default function VisioSessionsConfig({
     sessions,
     isInitialLoading,
     error,
-    isSessionUpdating,
+    isSaving: isSavingSessions,
+    hasUnsavedChanges,
     handlePriceChange,
     handleToggle,
-    handlePriceBlur,
-    handleToggleUpdate,
+    saveSessions,
   } = useProSessionsConfig();
 
   // État pour les données personnalisées
@@ -196,13 +197,11 @@ export default function VisioSessionsConfig({
       {/* Configuration des sessions */}
       <div className="space-y-4">
         {sessions.map((session) => {
-          const sessionUpdating = isSessionUpdating(session.id);
-
           return (
             <div
               key={session.id}
               className={`flex items-center justify-between p-4 bg-white rounded-[12px] border border-light-blue-gray ${
-                sessionUpdating ? "opacity-70" : ""
+                isSavingSessions ? "opacity-70" : ""
               } transition-opacity duration-200`}
             >
               <div className="flex items-center gap-6">
@@ -223,10 +222,9 @@ export default function VisioSessionsConfig({
                         parseInt(e.target.value) || 0
                       )
                     }
-                    onBlur={() => handlePriceBlur(session.id)}
-                    disabled={!session.enabled || sessionUpdating}
+                    disabled={!session.enabled || isSavingSessions}
                     className={`w-16 px-2 py-1 text-center border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      session.enabled && !sessionUpdating
+                      session.enabled && !isSavingSessions
                         ? "border-gray-300 bg-white text-gray-900"
                         : "border-gray-200 bg-gray-50 text-gray-400"
                     }`}
@@ -239,18 +237,25 @@ export default function VisioSessionsConfig({
                 checked={session.enabled}
                 onCheckedChange={(checked) => {
                   handleToggle(session.id, checked);
-                  // Pour les sessions existantes, appeler l'API immédiatement
-                  if (session.api_id) {
-                    handleToggleUpdate(session.id, checked);
-                  }
                 }}
-                disabled={sessionUpdating}
+                disabled={isSavingSessions}
                 className="data-[state=checked]:bg-gray-900"
               />
             </div>
           );
         })}
       </div>
+
+      <Button
+        label={
+          isSavingSessions
+            ? t("visioSessionsConfig.saving")
+            : t("visioSessionsConfig.save")
+        }
+        onClick={() => saveSessions()}
+        disabled={!hasUnsavedChanges || isSavingSessions}
+        className="w-full text-white font-bold h-[44px]"
+      />
 
       {/* Section Attentes */}
       <div className="space-y-4 border border-light-blue-gray pt-4 rounded-[8px] px-4 py-2">

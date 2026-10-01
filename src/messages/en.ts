@@ -363,6 +363,7 @@ export default {
     loadingSessions: "Loading sessions...",
     loadingError: "Error loading sessions",
     saving: "Saving...",
+    save: "Save",
     price: "Price",
     expectations: "Expectations",
     questionExamples: "Question examples",

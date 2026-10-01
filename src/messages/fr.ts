@@ -369,6 +369,7 @@ export default {
     loadingSessions: "Chargement des sessions...",
     loadingError: "Erreur lors du chargement des sessions",
     saving: "Sauvegarde en cours...",
+    save: "Sauvegarder",
     price: "Prix",
     expectations: "Attentes",
     questionExamples: "Exemples de questions",

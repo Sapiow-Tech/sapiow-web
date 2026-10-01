@@ -6,7 +6,7 @@ import {
   useGetProSession,
   useUpdateProSession,
 } from "@/api/sessions/useSessions";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export interface SessionDuration {
   id: string;
@@ -53,9 +53,41 @@ const DEFAULT_SESSIONS: SessionDuration[] = [
   },
 ];
 
+const cloneSessions = (sessions: SessionDuration[]): SessionDuration[] =>
+  sessions.map((session) => ({ ...session }));
+
+const isSessionDirty = (
+  current: SessionDuration,
+  saved: SessionDuration | undefined
+): boolean => {
+  if (!saved) return current.enabled || current.price !== 0;
+  return (
+    current.price !== saved.price ||
+    current.enabled !== saved.enabled ||
+    current.api_id !== saved.api_id
+  );
+};
+
+const buildSessionPayload = (session: SessionDuration) => ({
+  price: session.price,
+  session_type: session.session_type,
+  session_nature: "one_time" as const,
+  name: `Session ${session.duration}`,
+  one_on_one: true,
+  video_call: true,
+  strategic_session: false,
+  exclusive_ressources: false,
+  support: false,
+  mentorship: false,
+  webinar: false,
+  is_active: session.enabled,
+});
+
 export const useProSessionsConfig = () => {
   const [sessions, setSessions] = useState<SessionDuration[]>(DEFAULT_SESSIONS);
-  const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const [savedSessions, setSavedSessions] =
+    useState<SessionDuration[]>(DEFAULT_SESSIONS);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Hooks API
   const { data: sessionData, isLoading, error } = useGetProSession();
@@ -65,32 +97,37 @@ export const useProSessionsConfig = () => {
   // Charger les données de l'API au démarrage
   useEffect(() => {
     if (sessionData) {
-      // Si on a des données de session de l'API, on met à jour nos sessions locales
-      setSessions((prev) =>
-        prev.map((session) => {
-          // Vérifier si cette session existe dans les données API
-          const apiSession = Array.isArray(sessionData)
-            ? sessionData.find((s) => s.session_type === session.session_type)
-            : sessionData.session_type === session.session_type
+      const nextSessions = DEFAULT_SESSIONS.map((session) => {
+        const apiSession = Array.isArray(sessionData)
+          ? sessionData.find((s) => s.session_type === session.session_type)
+          : sessionData.session_type === session.session_type
             ? sessionData
             : null;
 
-          if (apiSession) {
-            return {
-              ...session,
-              price: apiSession.price,
-              enabled: apiSession.is_active,
-              api_id: apiSession.id, // Stocker l'ID API pour les mises à jour
-            };
-          }
-          return session;
-        })
-      );
+        if (apiSession) {
+          return {
+            ...session,
+            price: apiSession.price,
+            enabled: apiSession.is_active,
+            api_id: apiSession.id,
+          };
+        }
+        return { ...session };
+      });
+
+      setSessions(nextSessions);
+      setSavedSessions(cloneSessions(nextSessions));
     }
   }, [sessionData]);
 
+  const hasUnsavedChanges = useMemo(() => {
+    return sessions.some((session) => {
+      const saved = savedSessions.find((s) => s.id === session.id);
+      return isSessionDirty(session, saved);
+    });
+  }, [sessions, savedSessions]);
+
   const handlePriceChange = (id: string, newPrice: number) => {
-    // Mise à jour locale seulement
     setSessions((prev) =>
       prev.map((s) => (s.id === id ? { ...s, price: newPrice } : s))
     );
@@ -111,107 +148,50 @@ export const useProSessionsConfig = () => {
     );
   };
 
-  const handlePriceBlur = async (id: string) => {
-    const session = sessions.find((s) => s.id === id);
-    // Accepter 0 comme prix valide pour les consultations gratuites
-    if (!session || !session.enabled || session.price < 0) return;
+  const saveSessions = async (): Promise<boolean> => {
+    if (!hasUnsavedChanges || isSaving) return false;
 
-    // Sauvegarder via API seulement si la session est activée et a un prix valide (>= 0)
+    setIsSaving(true);
     try {
-      setIsUpdating(id);
+      let nextSessions = cloneSessions(sessions);
 
-      if (session.api_id) {
-        // Session existe déjà - utiliser UPDATE
-        await updateSessionMutation.mutateAsync({
-          id: session.api_id,
-          data: {
-            price: session.price,
-            session_type: session.session_type,
-            session_nature: "one_time",
-            name: `Session ${session.duration}`,
-            one_on_one: true,
-            video_call: true,
-            strategic_session: false,
-            exclusive_ressources: false,
-            support: false,
-            mentorship: false,
-            webinar: false,
-            is_active: session.enabled,
-          },
-        });
-      } else {
-        // Nouvelle session - utiliser CREATE
-        const response = await createSessionMutation.mutateAsync({
-          price: session.price,
-          session_type: session.session_type,
-          session_nature: "one_time",
-          name: `Session ${session.duration}`,
-          one_on_one: true,
-          video_call: true,
-          strategic_session: false,
-          exclusive_ressources: false,
-          support: false,
-          mentorship: false,
-          webinar: false,
-          is_active: session.enabled,
-        });
+      for (const session of nextSessions) {
+        const saved = savedSessions.find((s) => s.id === session.id);
+        if (!isSessionDirty(session, saved)) continue;
 
-        // Mettre à jour l'api_id après création
-        if (response.data?.id) {
-          setSessions((prev) =>
-            prev.map((s) =>
-              s.id === id ? { ...s, api_id: response.data!.id } : s
-            )
+        // Session déjà en base : mise à jour (prix, activation, y compris 0 €)
+        if (session.api_id) {
+          await updateSessionMutation.mutateAsync({
+            id: session.api_id,
+            data: buildSessionPayload(session),
+          });
+          continue;
+        }
+
+        // Nouvelle session : créer uniquement si activée (0 € accepté)
+        if (session.enabled && session.price >= 0) {
+          const response = await createSessionMutation.mutateAsync(
+            buildSessionPayload(session)
           );
+
+          if (response.data?.id) {
+            nextSessions = nextSessions.map((s) =>
+              s.id === session.id ? { ...s, api_id: response.data!.id } : s
+            );
+          }
         }
       }
+
+      setSessions(nextSessions);
+      setSavedSessions(cloneSessions(nextSessions));
+      return true;
     } catch (error) {
-      console.error("Erreur lors de la sauvegarde de la session:", error);
-      // En cas d'erreur, on peut désactiver la session
-      setSessions((prev) =>
-        prev.map((s) => (s.id === id ? { ...s, enabled: false } : s))
-      );
+      console.error("Erreur lors de la sauvegarde des sessions:", error);
+      return false;
     } finally {
-      setIsUpdating(null);
+      setIsSaving(false);
     }
   };
-
-  const handleToggleUpdate = async (id: string, enabled: boolean) => {
-    const session = sessions.find((s) => s.id === id);
-    if (!session || !session.api_id) return;
-
-    // Mettre à jour le statut d'activation pour une session existante
-    try {
-      setIsUpdating(id);
-      await updateSessionMutation.mutateAsync({
-        id: session.api_id,
-        data: {
-          price: session.price,
-          session_type: session.session_type,
-          session_nature: "one_time",
-          name: `Session ${session.duration}`,
-          one_on_one: true,
-          video_call: true,
-          strategic_session: false,
-          exclusive_ressources: false,
-          support: false,
-          mentorship: false,
-          webinar: false,
-          is_active: enabled,
-        },
-      });
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour de la session:", error);
-      // Rollback
-      setSessions((prev) =>
-        prev.map((s) => (s.id === id ? { ...s, enabled: !enabled } : s))
-      );
-    } finally {
-      setIsUpdating(null);
-    }
-  };
-
-  const isSessionUpdating = (sessionId: string) => isUpdating === sessionId;
 
   // Loading initial seulement si on n'a pas encore de données
   const isInitialLoading =
@@ -221,11 +201,11 @@ export const useProSessionsConfig = () => {
     sessions,
     isInitialLoading,
     error,
-    isSessionUpdating,
+    isSaving,
+    hasUnsavedChanges,
     handlePriceChange,
     handleToggle,
-    handlePriceBlur,
-    handleToggleUpdate,
+    saveSessions,
     sessionData, // Exposer sessionData pour accéder à extra_data
   };
 };
